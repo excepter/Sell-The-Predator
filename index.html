@@ -279,9 +279,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
    ===================================================================== */
 const GAME_CONFIG = {
   // 시작 자본 및 목표
-  startMoney: 1500,                 // 초기 자금
+  startMoney: 1800,                 // 초기 자금
   targetMoney: 100000,              // 클리어 목표 자금
-  labUpkeepPerSec: 4.5,             // 연구소 유지비 ($/초) — 초식 매도는 '유지비 벌이'용
+  // 연구소 유지비 ($/초) = 기본 + 초식 수 × 개체당 + 육식 수 × 개체당  — 초식 매도는 '유지비 벌이'용
+  labUpkeepBase: 4,
+  labUpkeepPerHerb: 0.04,
+  labUpkeepPerCarn: 0.25,
   arrearsGraceSec: 30,              // 잔고 $0(유지비 체납) 상태가 이 시간 지속되면 파산
 
   // 마켓 시세 및 판매
@@ -289,16 +292,16 @@ const GAME_CONFIG = {
   herbivorePriceMin: 5,
   herbivorePriceMax: 15,
   carnivorePriceMin: 200,
-  carnivorePriceMax: 650,
+  carnivorePriceMax: 720,
   hotThreshold: 0.7,                // 정규화 시세(0~1)가 이 값 이상이면 '고점' (호가창 점멸)
   harvestFee: 10,                   // 1회 매도 버튼 클릭 시 고정 수수료
 
   // 유료 개입
-  spawnHerbivoreCost: 50,
+  spawnHerbivoreCost: 100,
   spawnHerbivoreCount: 10,
-  spawnCarnivoreCost: 400,
+  spawnCarnivoreCost: 800,
   spawnCarnivoreCount: 2,
-  emergencyFeedCost: 30,
+  emergencyFeedCost: 60,
   emergencyFeedCount: 20,
 
   // 환경 레버 기본값 (0.0 ~ 1.0)
@@ -422,6 +425,11 @@ class SpatialGrid {
    [3] 월드 상태 생성 & 환경 공식
    ===================================================================== */
 // 환경 레버 → 실제 생태 계수
+// 연구소 유지비: 배양 개체가 많을수록 사료·산소·폐기물 처리 비용 증가
+function upkeepRate(w) {
+  const c = w.cfg;
+  return c.labUpkeepBase + w.herbs.length * c.labUpkeepPerHerb + w.carns.length * c.labUpkeepPerCarn;
+}
 function envFactors(w) {
   const c = w.cfg, e = w.env;
   // 실효 수온 = 수온 + (일조량 - 0.5) × 부작용 계수  (일조량이 높으면 물이 데워짐)
@@ -674,7 +682,7 @@ function stepWorld(w, dt) {
   if (w.market.timer <= 0) { w.market.timer += c.marketCycleSec; updateMarket(w); }
 
   // 연구소 유지비 (잔고는 0 밑으로 내려가지 않음)
-  const up = Math.min(w.money, c.labUpkeepPerSec * dt);
+  const up = Math.min(w.money, upkeepRate(w) * dt);
   w.money -= up; w.stats.upkeep += up;
   // 체납 타이머: 잔고가 바닥난 채로 유예 시간이 지나면 파산
   if (w.money <= 0.001) w.arrears += dt; else w.arrears = 0;
@@ -824,16 +832,20 @@ const BOTS = {
       w.env.temp = ratio > 8 ? 0.6 : ratio < 3 ? 0.3 : 0.45;
       // 개입: 멸종 위기 시에만 지출
       if (H < 6 && w.money >= c.spawnHerbivoreCost + 20) spawnHerbivores(w);
-      if (C < 2 && H >= 30 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
+      if (C < 2 && H >= 40 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
       // 육식 과밀(초식 대비)일 때 시세와 무관하게 잉여분 정리 → 붕괴 방지
       if (C > 8 && ratio < 2.2) ecoSell(w, 'carn', 6);
       if (H > 220) sellSpecies(w, 'herb', 0.3);
+      // 현금 부족: 초식을 팔아 유지비 충당 (체납 파산 방지)
+      if (w.money < 250 && H > 25) sellSpecies(w, 'herb', 0.3);
     },
     market(w) {
       const C = w.carns.length;
       // 육식 고점: 최소 번식 종자를 남기고 잉여분만 매도
       if (w.market.carn.p >= 0.6) ecoSell(w, 'carn', Math.max(4, Math.round(C * 0.25)));
       if (isHot(w, 'herb') && w.herbs.length > 120) sellSpecies(w, 'herb', 0.3);
+      // 번식 쌍이 없으면 초식을 팔아 육식 재투입 자금 마련
+      if (C < 2 && w.herbs.length > 35) sellSpecies(w, 'herb', 0.3);
     },
     pass(r) { return r.outcome === 'CLEAR' && r.time <= 1200; }
   }
@@ -910,7 +922,7 @@ function enterState(s) {
         <li>환경 레버(일조량·수온·영양)는 <b class="g">무료</b>. 방치하면 생태계는 반드시 한쪽으로 쏠려 붕괴합니다.</li>
         <li>세포는 <b>근처에 동족이 있어야만</b> 분열합니다. 다 팔아버리면 대가 끊깁니다 — 최소 번식 종자를 남기세요.</li>
         <li>육식 세포는 비싸게 팔리지만 시세가 널뛰기합니다. 호가창이 <b class="r">붉게 점멸</b>할 때가 고점입니다.</li>
-        <li>연구소 유지비가 매초 빠져나갑니다. 잔고 $0으로 ${GAME_CONFIG.arrearsGraceSec}초 체납하거나, 전멸 후 복원 자금이 없으면 <b class="r">파산</b>.</li>
+        <li>연구소 유지비가 매초 빠져나가며, <b>배양 개체가 많을수록 비싸집니다</b>. 잔고 $0으로 ${GAME_CONFIG.arrearsGraceSec}초 체납하거나, 전멸 후 복원 자금이 없으면 <b class="r">파산</b>.</li>
         <li>목표: 잔고 <b style="color:var(--gold)">${fmt(GAME_CONFIG.targetMoney)}</b> 달성.</li>
       </ul>
       <button class="bigbtn" id="ovStart">배양 시작 (START)</button>
@@ -1238,7 +1250,7 @@ function updateUI() {
   $('hTime').textContent = mmss(w.t);
   const up = $('hUpkeep');
   if (w.arrears > 0) { up.textContent = `⚠ 체납! ${Math.ceil(c.arrearsGraceSec - w.arrears)}초 후 파산`; up.style.opacity = (Math.floor(performance.now() / 300) % 2) ? 1 : 0.4; }
-  else { up.textContent = `-$${c.labUpkeepPerSec}/s`; up.style.opacity = 1; }
+  else { up.textContent = `-$${upkeepRate(w).toFixed(1)}/s`; up.style.opacity = 1; }
   $('hP').textContent = w.plants.length; $('hH').textContent = H; $('hC').textContent = C;
   // 마켓
   $('mTimer').textContent = m.timer.toFixed(1) + 's';
@@ -1310,7 +1322,7 @@ function frame(ts) {
    [14] 밸런스 튜너 (인스펙터) — 실시간 수정 / 코드 복사 / 봇 시뮬레이션
    ===================================================================== */
 const CFG_META = [
-  ['기본 · 경제', [['startMoney', '초기 자금', '재시작 시 적용'], ['targetMoney', '클리어 목표 자금'], ['labUpkeepPerSec', '연구소 유지비 $/s'], ['arrearsGraceSec', '체납 유예 (초)']]],
+  ['기본 · 경제', [['startMoney', '초기 자금', '재시작 시 적용'], ['targetMoney', '클리어 목표 자금'], ['labUpkeepBase', '유지비 기본 $/s'], ['labUpkeepPerHerb', '유지비 초식 1마리당 $/s'], ['labUpkeepPerCarn', '유지비 육식 1마리당 $/s'], ['arrearsGraceSec', '체납 유예 (초)']]],
   ['마켓', [['marketCycleSec', '시세 변동 주기 (초)'], ['herbivorePriceMin', '초식 단가 최소'], ['herbivorePriceMax', '초식 단가 최대'], ['carnivorePriceMin', '육식 단가 최소'], ['carnivorePriceMax', '육식 단가 최대'], ['hotThreshold', '고점 판정 (정규화 0~1)'], ['harvestFee', '매도 수수료']]],
   ['유료 개입', [['spawnHerbivoreCost', '초식 스폰 비용'], ['spawnHerbivoreCount', '초식 스폰 수'], ['spawnCarnivoreCost', '육식 스폰 비용'], ['spawnCarnivoreCount', '육식 스폰 수'], ['emergencyFeedCost', '영양 살포 비용'], ['emergencyFeedCount', '영양 살포 식물 수']]],
   ['환경', [['defaultLight', '일조량 기본값', '재시작 시 적용'], ['defaultTemp', '수온 기본값', '재시작 시 적용'], ['defaultNutrient', '영양 기본값', '재시작 시 적용'], ['lightHeatEffect', '일조량→수온 부작용']]],
