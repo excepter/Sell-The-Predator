@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sell The Predator : Breed &amp; Bleed</title>
+<style>
+/* =====================================================================
+   스타일 — Bio-Lab Monitor 컨셉 (심해색 배경 + 네온 발광)
+   ===================================================================== */
+:root{
+  --bg:#050A10; --panel:#07111b; --panel2:#0a1724; --line:#14304a; --line2:#1e4566;
+  --text:#bcd6e8; --dim:#5d7d94; --green:#39ff8a; --cyan:#22e4ff; --red:#ff2d55; --gold:#ffd166;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:"JetBrains Mono","D2Coding",Consolas,"Malgun Gothic",monospace;font-size:13px;overflow:hidden;user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.35;filter:grayscale(.7)}
+#app{display:grid;grid-template-rows:60px minmax(0,1fr) 184px;grid-template-columns:minmax(0,1fr) 330px;height:100vh;gap:8px;padding:8px}
+.panel,header,#market{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:8px}
+.ptitle{font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ptitle span{letter-spacing:.05em}
+.g{color:var(--green)} .c{color:var(--cyan)} .r{color:var(--red)} .neg{color:var(--red)} .pos{color:var(--green)}
+
+/* ---------- 헤더 ---------- */
+header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:220px}
+.logo{width:34px;height:34px;display:grid;place-items:center;color:var(--red);font-size:22px;
+  border:1px solid #5a1424;border-radius:8px;text-shadow:0 0 10px var(--red);background:#14060b}
+.title{font-weight:800;letter-spacing:.12em;font-size:15px;color:#e8f4ff}
+.sub{font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.hstats{display:flex;gap:22px;align-items:center;flex:1;min-width:0}
+.stat{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.stat label{font-size:10px;color:var(--dim);letter-spacing:.1em}
+.stat>span{font-size:15px;font-weight:700}
+.stat.money>span{font-size:20px;color:var(--gold);text-shadow:0 0 12px rgba(255,209,102,.35)}
+.stat.money>span.flash-up{animation:mup .6s}
+@keyframes mup{0%{color:#fff;text-shadow:0 0 18px var(--green)}100%{}}
+.goal{min-width:160px}
+.goalbar{height:6px;background:#0d2033;border-radius:3px;overflow:hidden;width:160px}
+.goalbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));box-shadow:0 0 8px var(--gold)}
+.goal span{font-size:11px!important;color:var(--dim)}
+.pop b{margin-right:8px;font-weight:700} .pop i{font-style:normal}
+.hctrl{display:flex;gap:10px;align-items:center}
+.speed{display:flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden}
+.speed button{background:transparent;border:0;padding:7px 11px;font-weight:700;color:var(--dim)}
+.speed button.on{background:#123553;color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+#btnTuner{background:#0d1d2d;border:1px solid var(--line2);border-radius:6px;padding:7px 11px}
+#btnTuner:hover{border-color:var(--cyan)}
+
+/* ---------- 메인 캔버스 ---------- */
+#stage{grid-row:2;grid-column:1;position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#02060a;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#toasts{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:46%}
+.toast{background:rgba(6,14,22,.86);border:1px solid var(--line2);border-left:3px solid var(--cyan);padding:7px 10px;border-radius:5px;
+  font-size:12px;animation:tin .25s ease-out;transition:opacity .5s}
+.toast.warn{border-left-color:var(--gold)} .toast.bad{border-left-color:var(--red);color:#ffc2cd} .toast.good{border-left-color:var(--green)}
+@keyframes tin{from{transform:translateX(-12px);opacity:0}}
+#pauseTag{position:absolute;left:50%;top:12px;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--dim);pointer-events:none}
+
+/* ---------- 마켓 호가창 ---------- */
+#market{grid-row:2;grid-column:2;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.cycle .bar{height:6px;background:#0d2033;border-radius:3px;overflow:hidden;margin-top:6px}
+.cycle .bar i{display:block;height:100%;width:100%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.cycle .row span:last-child{font-weight:700;color:var(--cyan)}
+.event{margin-top:6px;font-size:11px;color:var(--dim);min-height:15px}
+.event.spike{color:var(--red);font-weight:700} .event.crash{color:#7fa3ff}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px;background:#061019;position:relative;transition:border-color .2s}
+.card .nm{font-weight:700}
+.card .hold{font-size:11px;color:var(--dim)} .card .hold b{color:var(--text)}
+.price{display:flex;align-items:baseline;justify-content:space-between;margin:6px 0 4px}
+.price>span:first-child{font-size:26px;font-weight:800;letter-spacing:.02em}
+.card.herb .price>span:first-child{color:var(--cyan);text-shadow:0 0 12px rgba(34,228,255,.35)}
+.card.carn .price>span:first-child{color:var(--red);text-shadow:0 0 12px rgba(255,45,85,.4)}
+.chg{font-weight:700;font-size:13px}
+.spark{width:100%;height:34px;display:block}
+.small{font-size:11px;color:var(--dim);margin-top:4px} .small b{color:var(--text)}
+.card.hot{animation:hot .8s infinite alternate;border-color:var(--red)}
+.card.hot::after{content:"HIGH";position:absolute;right:10px;top:-8px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;letter-spacing:.1em}
+@keyframes hot{from{box-shadow:0 0 0 rgba(255,45,85,0);background:#061019}to{box-shadow:0 0 22px rgba(255,45,85,.45) inset;background:#1a0710}}
+.sellgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sell{padding:10px 6px;border-radius:6px;font-weight:700;font-size:12px;background:#0b1a28;border:1px solid var(--line2);position:relative}
+.sell small{display:block;font-size:10px;color:var(--dim);font-weight:400;margin-top:2px}
+.sell.herb:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 10px rgba(34,228,255,.3)}
+.sell.carn{border-color:#4a1626;background:#160810}
+.sell.carn:hover:not(:disabled){border-color:var(--red);box-shadow:0 0 12px rgba(255,45,85,.4)}
+.fee{font-size:10px;color:var(--dim);text-align:center}
+.log{font-size:11px;color:var(--dim);display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;min-height:60px}
+.log div b{color:var(--gold)}
+
+/* ---------- 하단 컨트롤 ---------- */
+#controls{grid-row:3;grid-column:1/3;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px;min-height:0}
+#controls .panel{padding:12px;min-height:0}
+.free{color:var(--green);border:1px solid #1d5a3a;border-radius:3px;padding:0 5px;font-size:10px}
+.paid{color:var(--gold);border:1px solid #5a4a1d;border-radius:3px;padding:0 5px;font-size:10px}
+.lever{display:grid;grid-template-columns:26px 190px minmax(80px,1fr) 52px 150px;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;border:1px solid transparent}
+.lever.sel{border-color:var(--line2);background:#0b1b2b}
+.lk{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line2);border-radius:4px;font-size:11px;font-weight:700;color:var(--dim)}
+.lever.sel .lk{color:var(--bg);background:var(--cyan);border-color:var(--cyan)}
+.ln{font-weight:700} .ln small{display:block;font-weight:400;font-size:10px;color:var(--dim)}
+.lv{font-weight:800;text-align:right;font-size:14px}
+.ld{font-size:11px;color:var(--dim);white-space:nowrap}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#0e2338;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--thumb,var(--cyan));box-shadow:0 0 10px var(--thumb,var(--cyan));cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:0;background:var(--thumb,var(--cyan));box-shadow:0 0 10px var(--thumb,var(--cyan))}
+#lvLight{--thumb:#ffe066} #lvTemp{--thumb:#ff7a45} #lvNut{--thumb:var(--green)}
+.ibtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ib{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;border-radius:8px;background:#0b1a28;border:1px solid var(--line2);text-align:left}
+.ib b{font-size:13px} .ib span{font-size:10px;color:var(--dim)} .ib em{font-style:normal;font-weight:800;color:var(--gold);font-size:16px}
+.ib.herb b{color:var(--cyan)} .ib.carn b{color:var(--red)} .ib.feed b{color:var(--green)}
+.ib:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 10px rgba(255,209,102,.25)}
+.keys{margin-top:10px;font-size:10px;color:var(--dim);line-height:1.6}
+.keys kbd{border:1px solid var(--line2);border-radius:3px;padding:0 4px;color:var(--text);font-family:inherit}
+
+/* ---------- 오버레이 (시작/종료) ---------- */
+#overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,6,10,.72);backdrop-filter:blur(3px);z-index:20}
+#overlay.hidden{display:none}
+.ovbox{width:min(620px,92vw);border:1px solid var(--line2);border-radius:12px;background:rgba(7,17,27,.94);padding:30px 34px;text-align:center;box-shadow:0 0 60px rgba(34,228,255,.08)}
+.ovbox h1{font-size:34px;letter-spacing:.14em;color:#eaf6ff;text-shadow:0 0 18px rgba(255,45,85,.5)}
+.ovbox h2{font-size:14px;letter-spacing:.4em;color:var(--red);margin-top:4px}
+.ovbox .tag{display:inline-block;margin:16px 0 18px;padding:4px 12px;border:1px solid var(--line2);border-radius:20px;font-size:11px;letter-spacing:.15em;color:var(--cyan)}
+.ovbox ul{list-style:none;text-align:left;line-height:1.85;font-size:12.5px;margin:0 auto 22px;max-width:520px}
+.ovbox li::before{content:"› ";color:var(--cyan)}
+.bigbtn{padding:14px 34px;font-size:15px;font-weight:800;letter-spacing:.1em;border-radius:8px;background:#0c2a3f;border:1px solid var(--cyan);color:var(--cyan);text-shadow:0 0 8px var(--cyan);box-shadow:0 0 20px rgba(34,228,255,.25)}
+.bigbtn:hover{background:#12405e}
+.ovbox.over h1{color:var(--red);font-size:26px}
+.ovbox.clear h1{color:var(--gold);font-size:26px;text-shadow:0 0 22px rgba(255,209,102,.6)}
+.emblem{width:110px;height:110px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:48px;border:2px solid currentColor}
+.ovbox.over .emblem{color:var(--red);box-shadow:0 0 30px rgba(255,45,85,.4)}
+.ovbox.clear .emblem{color:var(--gold);box-shadow:0 0 40px rgba(255,209,102,.5);animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.endstats{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;text-align:left;margin:16px auto 22px;max-width:420px;font-size:12px}
+.endstats b{float:right;color:var(--text)}
+
+/* ---------- 밸런스 튜너 ---------- */
+#tuner{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:rgba(6,13,21,.97);border-left:1px solid var(--line2);z-index:30;
+  transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+#tuner.open{transform:none}
+.thead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.thead b{letter-spacing:.12em}
+.tbtns{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tbtns button,.thead button{background:#0d1d2d;border:1px solid var(--line2);border-radius:5px;padding:6px 10px;font-size:12px}
+.tbtns button:hover{border-color:var(--cyan)}
+.tbody{overflow:auto;padding:8px 16px 20px;flex:1}
+.tsec{margin-top:12px;font-size:10px;letter-spacing:.2em;color:var(--cyan);border-bottom:1px solid var(--line);padding-bottom:4px}
+.trow{display:grid;grid-template-columns:1fr 90px 74px;gap:8px;align-items:center;padding:4px 0}
+.trow label{font-size:12px} .trow label small{display:block;font-size:9.5px;color:var(--dim)}
+.trow input[type=number]{width:74px;background:#0a1826;border:1px solid var(--line2);color:var(--text);border-radius:4px;padding:3px 5px;font-family:inherit;font-size:12px}
+.trow input.changed{border-color:var(--gold);color:var(--gold)}
+#simOut{font-size:11.5px;line-height:1.55}
+#simOut table{width:100%;border-collapse:collapse;margin-top:6px}
+#simOut td,#simOut th{border-bottom:1px solid var(--line);padding:4px 3px;text-align:left;vertical-align:top}
+#simOut th{color:var(--dim);font-weight:400;font-size:10px}
+.ok{color:var(--green);font-weight:700} .ng{color:var(--red);font-weight:700}
+.simbar{height:5px;background:#0d2033;border-radius:3px;overflow:hidden;margin:6px 0}
+.simbar i{display:block;height:100%;width:0;background:var(--gold)}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:1320px){ .brand{min-width:0} .brand .sub{display:none} .hstats{gap:14px} .lever{grid-template-columns:26px 150px minmax(70px,1fr) 46px 130px} }
+@media (max-width:1150px){ .stat.pop,.brand>div:last-child{display:none} #app{grid-template-columns:minmax(0,1fr) 290px} .ln small{display:none} }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ================= 상단 헤더 ================= -->
+  <header>
+    <div class="brand">
+      <div class="logo">◆</div>
+      <div><div class="title">SELL THE PREDATOR</div><div class="sub">BREED &amp; BLEED · BIO-LAB MONITOR</div></div>
+    </div>
+    <div class="hstats">
+      <div class="stat money"><label>현재 잔고</label><span id="hMoney">💰 $0</span></div>
+      <div class="stat goal"><label id="hGoalLbl">목표 잔고 $100,000</label><div class="goalbar"><i id="hGoalBar"></i></div><span id="hGoalPct">0%</span></div>
+      <div class="stat"><label>경과 시간</label><span id="hTime">00:00</span></div>
+      <div class="stat"><label>연구소 유지비</label><span id="hUpkeep" class="neg">-$0/s</span></div>
+      <div class="stat pop"><label>배양 개체 (식물 · 초식 · 육식)</label><span><b class="g">● <i id="hP">0</i></b><b class="c">▲ <i id="hH">0</i></b><b class="r">◆ <i id="hC">0</i></b></span></div>
+    </div>
+    <div class="hctrl">
+      <div class="speed" id="speedBtns"><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
+      <button id="btnTuner">⚙️ 밸런스 튜너</button>
+    </div>
+  </header>
+
+  <!-- ================= 중앙 배양액 캔버스 ================= -->
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="toasts"></div>
+  </div>
+
+  <!-- ================= 우측 바이오 마켓 ================= -->
+  <aside id="market">
+    <div class="ptitle">BIO-MARKET <span>· 호가창</span></div>
+    <div class="cycle">
+      <div class="row"><span>다음 시세 변동</span><span id="mTimer">15.0s</span></div>
+      <div class="bar"><i id="mBar"></i></div>
+      <div id="mEvent" class="event">시장 개장</div>
+    </div>
+    <div class="card herb" id="cardH">
+      <div class="row"><span class="nm"><b class="c">▲</b> 초식 세포</span><span class="hold">보유 <b id="mHoldH">0</b>마리</span></div>
+      <div class="price"><span id="mPriceH">$0</span><span id="mChgH" class="chg">—</span></div>
+      <canvas class="spark" id="sparkH"></canvas>
+      <div class="row small"><span id="mRangeH">범위</span><span>30% <b id="mEstH30">$0</b> · 50% <b id="mEstH50">$0</b></span></div>
+    </div>
+    <div class="card carn" id="cardC">
+      <div class="row"><span class="nm"><b class="r">◆</b> 육식 세포</span><span class="hold">보유 <b id="mHoldC">0</b>마리</span></div>
+      <div class="price"><span id="mPriceC">$0</span><span id="mChgC" class="chg">—</span></div>
+      <canvas class="spark" id="sparkC"></canvas>
+      <div class="row small"><span id="mRangeC">범위</span><span>30% <b id="mEstC30">$0</b> · 50% <b id="mEstC50">$0</b></span></div>
+    </div>
+    <div class="sellgrid">
+      <button class="sell herb" data-kind="herb" data-pct="0.3">초식 30% 매도<small>[1]</small></button>
+      <button class="sell herb" data-kind="herb" data-pct="0.5">초식 50% 매도<small>&nbsp;</small></button>
+      <button class="sell carn" data-kind="carn" data-pct="0.3">육식 30% 매도<small>[2]</small></button>
+      <button class="sell carn" data-kind="carn" data-pct="0.5">육식 50% 매도<small>&nbsp;</small></button>
+    </div>
+    <div class="fee" id="feeNote">매도 1회당 고정 수수료 $10 · 최소 1마리 체결</div>
+    <div class="log" id="tradeLog"><div>체결 내역 없음</div></div>
+  </aside>
+
+  <!-- ================= 하단 컨트롤 대시보드 ================= -->
+  <section id="controls">
+    <div class="panel">
+      <div class="ptitle">환경 레버 조율 <span class="free">FREE</span></div>
+      <div class="lever" data-lever="light">
+        <div class="lk">Q</div><div class="ln">☀ 일조량<small>식물 생성 빈도 · 수온 소폭 상승</small></div>
+        <input type="range" min="0" max="100" step="1" id="lvLight"><div class="lv" id="lvLightV">50%</div><div class="ld" id="lvLightD"></div>
+      </div>
+      <div class="lever" data-lever="temp">
+        <div class="lk">W</div><div class="ln">🌡 수온<small>이동 속도 · 대사량 동시 증가</small></div>
+        <input type="range" min="0" max="100" step="1" id="lvTemp"><div class="lv" id="lvTempV">50%</div><div class="ld" id="lvTempD"></div>
+      </div>
+      <div class="lever" data-lever="nutrient">
+        <div class="lk">E</div><div class="ln">⚗ 영양 염류<small>식물 1개의 칼로리</small></div>
+        <input type="range" min="0" max="100" step="1" id="lvNut"><div class="lv" id="lvNutV">50%</div><div class="ld" id="lvNutD"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">직접 개입 <span class="paid">PAID</span></div>
+      <div class="ibtns">
+        <button id="bSpawnH" class="ib herb"><b>▲ 초식 스폰</b><span id="bSpawnHd">10마리 · 중앙 투입</span><em id="bSpawnHc">$50</em></button>
+        <button id="bSpawnC" class="ib carn"><b>◆ 육식 스폰</b><span id="bSpawnCd">2마리 · 중앙 투입</span><em id="bSpawnCc">$400</em></button>
+        <button id="bFeed" class="ib feed"><b>● 영양 살포</b><span id="bFeedd">식물 20개 · [S]</span><em id="bFeedc">$30</em></button>
+      </div>
+      <div class="keys">
+        <kbd>1</kbd> 초식 30% 매도 · <kbd>2</kbd> 육식 30% 매도 · <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> 레버 선택 후 <kbd>←</kbd><kbd>→</kbd> 조절 ·
+        <kbd>S</kbd> 영양 살포 · <kbd>+</kbd><kbd>-</kbd> 배속 · <kbd>~</kbd> 밸런스 튜너
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= 오버레이 (상태 머신 화면) ================= -->
+<div id="overlay"></div>
+
+<!-- ================= 밸런스 튜너 (인스펙터) ================= -->
+<div id="tuner">
+  <div class="thead"><b>⚙️ BALANCE TUNER</b><button id="tClose">닫기 [~]</button></div>
+  <div class="tbtns">
+    <button id="tCopy">📋 설정 코드 복사</button>
+    <button id="tSim">▶ 밸런스 시뮬레이션</button>
+    <button id="tReset">↺ 기본값 복원</button>
+    <button id="tRestart">⟳ 현재 설정으로 재시작</button>
+  </div>
+  <div class="tbody">
+    <div class="tsec">BALANCE SIMULATION · 헤드리스 봇 3종</div>
+    <div id="simOut"><div style="color:var(--dim);margin-top:6px">현재 설정값으로 Greedy / Hoarder / Eco-Trader 봇을 각각 최대 20분(게임 시간) 가상 실행합니다.</div></div>
+    <div id="tFields"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ==SIM-START==
+/* =====================================================================
+   [1] 밸런스 설정 (GAME_CONFIG)
+   - 명세서 4장의 어림값에서 출발해 Phase 6 헤드리스 봇 시뮬레이션으로 리밸런싱한 값
+   ===================================================================== */
+const GAME_CONFIG = {
+  // 시작 자본 및 목표
+  startMoney: 1500,                 // 초기 자금
+  targetMoney: 100000,              // 클리어 목표 자금
+  labUpkeepPerSec: 4.5,             // 연구소 유지비 ($/초) — 초식 매도는 '유지비 벌이'용
+  arrearsGraceSec: 30,              // 잔고 $0(유지비 체납) 상태가 이 시간 지속되면 파산
+
+  // 마켓 시세 및 판매
+  marketCycleSec: 15,               // 시세 변동 주기 (초)
+  herbivorePriceMin: 5,
+  herbivorePriceMax: 15,
+  carnivorePriceMin: 200,
+  carnivorePriceMax: 650,
+  hotThreshold: 0.7,                // 정규화 시세(0~1)가 이 값 이상이면 '고점' (호가창 점멸)
+  harvestFee: 10,                   // 1회 매도 버튼 클릭 시 고정 수수료
+
+  // 유료 개입
+  spawnHerbivoreCost: 50,
+  spawnHerbivoreCount: 10,
+  spawnCarnivoreCost: 400,
+  spawnCarnivoreCount: 2,
+  emergencyFeedCost: 30,
+  emergencyFeedCount: 20,
+
+  // 환경 레버 기본값 (0.0 ~ 1.0)
+  defaultLight: 0.5,
+  defaultTemp: 0.5,
+  defaultNutrient: 0.5,
+  lightHeatEffect: 0.3,             // 일조량이 실효 수온에 주는 부작용 계수
+
+  // 식물
+  plantSpawnBaseRate: 3.2,           // 일조량 0.5일 때 초당 생성 개수
+  plantEnergyBase: 20,              // 영양 0.5일 때 식물 1개 에너지
+  plantMaxCap: 200,
+
+  // 초식 세포
+  herbivoreStartEnergy: 40,
+  herbivoreReproduceThreshold: 80,
+  herbivoreBaseSpeed: 40,
+  herbivoreBaseMetabolism: 2.0,
+  herbivoreSightRange: 80,
+  herbivoreFleeRange: 60,           // 육식을 감지하고 도망치는 반경
+  herbivoreMateRange: 60,           // 분열에 필요한 동족(정족수) 감지 반경 — Allee 효과
+  herbivoreReproCooldown: 2,
+
+  // 육식 세포
+  carnivoreStartEnergy: 80,
+  carnivoreReproduceThreshold: 180,
+  carnivoreBaseSpeed: 55,
+  carnivoreBaseMetabolism: 2.8,
+  carnivoreSightRange: 150,
+  carnivoreEnergyYield: 92,
+  carnivoreMateRange: 180,
+  carnivoreDigestTime: 1.0,         // 포식 후 소화 시간 (사냥 휴지기)
+  carnivoreReproCooldown: 10,
+  carnivoreSpacing: 70,             // 육식끼리 유지하려는 최소 간격 (영역성)
+
+  // 시스템 한계
+  maxHerbivores: 400,
+  maxCarnivores: 150
+};
+const DEFAULT_CONFIG = JSON.parse(JSON.stringify(GAME_CONFIG));
+
+const WORLD_W = 1200, WORLD_H = 760;   // 배양조 논리 좌표 (화면 크기와 무관하게 밸런스 고정)
+const FIXED_DT = 1 / 60;               // 고정 시뮬레이션 스텝 (60FPS)
+
+/* =====================================================================
+   [2] 유틸리티 — 시드 난수, 가우시안, 공간 해시 그리드
+   ===================================================================== */
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// Box-Muller 변환: 표준정규분포 난수
+function gauss(rng) {
+  let u = 0; while (u === 0) u = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng());
+}
+
+// 근접 탐색을 O(N)으로 줄이기 위한 균일 격자
+class SpatialGrid {
+  constructor(w, h, cs) {
+    this.cs = cs; this.cols = Math.ceil(w / cs); this.rows = Math.ceil(h / cs);
+    this.cells = [];
+    for (let i = 0; i < this.cols * this.rows; i++) this.cells.push([]);
+  }
+  build(list) {
+    for (let i = 0; i < this.cells.length; i++) this.cells[i].length = 0;
+    for (let i = 0; i < list.length; i++) {
+      const o = list[i]; if (o.dead) continue;
+      const cx = clamp((o.x / this.cs) | 0, 0, this.cols - 1), cy = clamp((o.y / this.cs) | 0, 0, this.rows - 1);
+      this.cells[cy * this.cols + cx].push(o);
+    }
+  }
+  // 반경 r 이내 가장 가까운 개체
+  nearest(x, y, r, skip) {
+    const cs = this.cs;
+    const x0 = Math.max(0, ((x - r) / cs) | 0), x1 = Math.min(this.cols - 1, ((x + r) / cs) | 0);
+    const y0 = Math.max(0, ((y - r) / cs) | 0), y1 = Math.min(this.rows - 1, ((y + r) / cs) | 0);
+    let best = null, bd = r * r;
+    for (let cy = y0; cy <= y1; cy++) {
+      const row = cy * this.cols;
+      for (let cx = x0; cx <= x1; cx++) {
+        const cell = this.cells[row + cx];
+        for (let i = 0; i < cell.length; i++) {
+          const o = cell[i]; if (o === skip || o.dead) continue;
+          const dx = o.x - x, dy = o.y - y, d2 = dx * dx + dy * dy;
+          if (d2 < bd) { bd = d2; best = o; }
+        }
+      }
+    }
+    return best;
+  }
+  // 반경 r 이내 모든 개체 (out 배열 재사용)
+  neighbors(x, y, r, skip, out) {
+    out.length = 0;
+    const cs = this.cs, r2 = r * r;
+    const x0 = Math.max(0, ((x - r) / cs) | 0), x1 = Math.min(this.cols - 1, ((x + r) / cs) | 0);
+    const y0 = Math.max(0, ((y - r) / cs) | 0), y1 = Math.min(this.rows - 1, ((y + r) / cs) | 0);
+    for (let cy = y0; cy <= y1; cy++) {
+      const row = cy * this.cols;
+      for (let cx = x0; cx <= x1; cx++) {
+        const cell = this.cells[row + cx];
+        for (let i = 0; i < cell.length; i++) {
+          const o = cell[i]; if (o === skip || o.dead) continue;
+          const dx = o.x - x, dy = o.y - y;
+          if (dx * dx + dy * dy < r2) out.push(o);
+        }
+      }
+    }
+    return out;
+  }
+}
+
+/* =====================================================================
+   [3] 월드 상태 생성 & 환경 공식
+   ===================================================================== */
+// 환경 레버 → 실제 생태 계수
+function envFactors(w) {
+  const c = w.cfg, e = w.env;
+  // 실효 수온 = 수온 + (일조량 - 0.5) × 부작용 계수  (일조량이 높으면 물이 데워짐)
+  const effTemp = clamp(e.temp + (e.light - 0.5) * c.lightHeatEffect, 0, 1);
+  return {
+    effTemp,
+    speedMul: 0.55 + 0.9 * effTemp,                         // 이동 속도 배율 (0.55 ~ 1.45)
+    metabMul: 0.35 + 1.3 * effTemp,                         // 대사량 배율   (0.35 ~ 1.65) — 속도보다 가파름
+    plantRate: c.plantSpawnBaseRate * (e.light / 0.5),      // 초당 식물 생성 = 기본값 × (일조량 / 0.5)
+    plantEnergy: c.plantEnergyBase * (0.3 + 1.4 * e.nutrient) // 식물 칼로리 = 기본값 × (0.3 ~ 1.7)
+  };
+}
+
+let _uid = 1;
+function makeAgent(w, x, y, e) {
+  const a = w.rng() * Math.PI * 2;
+  return { id: _uid++, x, y, vx: Math.cos(a) * 10, vy: Math.sin(a) * 10, e, cd: 1 + w.rng(), wa: a, hd: a, dg: 0, dead: false, bt: w.t };
+}
+function addPlant(w, energy) {
+  if (w.plants.length >= w.cfg.plantMaxCap) return false;
+  w.plants.push({ x: 20 + w.rng() * (WORLD_W - 40), y: 20 + w.rng() * (WORLD_H - 40), e: energy, dead: false, bt: w.t });
+  return true;
+}
+function addHerbAt(w, x, y, e) { const h = makeAgent(w, x, y, e); w.herbs.push(h); return h; }
+function addCarnAt(w, x, y, e) { const c = makeAgent(w, x, y, e); w.carns.push(c); return c; }
+
+function createWorld(cfg, opts = {}) {
+  const seed = opts.seed != null ? opts.seed : (Math.random() * 1e9) | 0;
+  const w = {
+    cfg, rng: mulberry32(seed), headless: !!opts.headless, t: 0, money: cfg.startMoney,
+    plants: [], herbs: [], carns: [],
+    env: { light: cfg.defaultLight, temp: cfg.defaultTemp, nutrient: cfg.defaultNutrient },
+    plantAcc: 0,
+    plantGrid: new SpatialGrid(WORLD_W, WORLD_H, 40),
+    herbGrid: new SpatialGrid(WORLD_W, WORLD_H, 40),
+    carnGrid: new SpatialGrid(WORLD_W, WORLD_H, 40),
+    market: null, history: [], histAcc: 0,
+    stats: { soldH: 0, soldC: 0, revenue: 0, fees: 0, upkeep: 0, spent: 0, bornH: 0, bornC: 0,
+      starvedH: 0, starvedC: 0, eaten: 0, peakMoney: cfg.startMoney, herbExt: 0, carnExt: 0,
+      maxH: 0, maxC: 0, crashes: 0, hPeak: 0 },
+    events: [], state: 'playing', endTime: 0, endReason: '', arrears: 0, marketTick: false, prevH: 0, prevC: 0
+  };
+  w.market = createMarket(w);
+  const F = envFactors(w);
+  // 초기 생태계: 식물 20, 초식 10, 육식 0 (명세 5장)
+  for (let i = 0; i < 20; i++) addPlant(w, F.plantEnergy);
+  const nH = opts.herbs != null ? opts.herbs : 10, nC = opts.carns || 0;
+  for (let i = 0; i < nH; i++) addHerbAt(w, WORLD_W / 2 + (w.rng() - .5) * 300, WORLD_H / 2 + (w.rng() - .5) * 200, cfg.herbivoreStartEnergy);
+  for (let i = 0; i < nC; i++) addCarnAt(w, WORLD_W / 2 + (w.rng() - .5) * 200, WORLD_H / 2 + (w.rng() - .5) * 150, cfg.carnivoreStartEnergy);
+  w.prevH = w.herbs.length; w.prevC = w.carns.length;
+  return w;
+}
+function emit(w, ev) { if (!w.headless) w.events.push(ev); }
+
+/* =====================================================================
+   [4] 게임 루프 — Boids 조향, 포식 판정, 분열, 아사
+   ===================================================================== */
+const _nb = [];
+// 벽 회피: 가장자리 margin 이내면 안쪽으로 밀어내는 희망 속도 (gain = 반발 강도)
+function wallSteer(a, sp, out, m = 40, gain = 1.5) {
+  if (a.x < m) out.x += (m - a.x) / m * sp * gain; else if (a.x > WORLD_W - m) out.x -= (a.x - (WORLD_W - m)) / m * sp * gain;
+  if (a.y < m) out.y += (m - a.y) / m * sp * gain; else if (a.y > WORLD_H - m) out.y -= (a.y - (WORLD_H - m)) / m * sp * gain;
+}
+// 벽 근처에서는 배회 방향(wa) 자체를 안쪽으로 회전시킴
+// (배회 의지와 벽 반발력이 정면으로 상쇄되면 속도가 0 근처가 되어 방향을 못 정하고 떨리는 현상 방지)
+function turnFromWall(a, m, dt) {
+  let nx = 0, ny = 0;
+  if (a.x < m) nx = 1; else if (a.x > WORLD_W - m) nx = -1;
+  if (a.y < m) ny = 1; else if (a.y > WORLD_H - m) ny = -1;
+  if (!nx && !ny) return;
+  if (Math.cos(a.wa) * nx + Math.sin(a.wa) * ny > 0.3) return;   // 이미 안쪽을 향하고 있음
+  let d = Math.atan2(ny, nx) - a.wa;
+  d = Math.atan2(Math.sin(d), Math.cos(d));                        // -π ~ π 로 정규화
+  a.wa += clamp(d, -5 * dt, 5 * dt);                               // 초당 최대 5rad 회전
+}
+// 희망 속도(dv)로 부드럽게 조향 후 이동 적분
+function integrate(a, dvx, dvy, lim, dt) {
+  const k = Math.min(1, 5 * dt);                // 조향 민감도 (관성)
+  a.vx += (dvx - a.vx) * k; a.vy += (dvy - a.vy) * k;
+  const sp = Math.hypot(a.vx, a.vy);
+  if (sp > lim) { a.vx *= lim / sp; a.vy *= lim / sp; }
+  a.x += a.vx * dt; a.y += a.vy * dt;
+  // 벽에 닿으면 속도와 배회 방향을 함께 반사
+  if (a.x < 3) { a.x = 3; a.vx = Math.abs(a.vx); a.wa = Math.PI - a.wa; } else if (a.x > WORLD_W - 3) { a.x = WORLD_W - 3; a.vx = -Math.abs(a.vx); a.wa = Math.PI - a.wa; }
+  if (a.y < 3) { a.y = 3; a.vy = Math.abs(a.vy); a.wa = -a.wa; } else if (a.y > WORLD_H - 3) { a.y = WORLD_H - 3; a.vy = -Math.abs(a.vy); a.wa = -a.wa; }
+  // 렌더링용 기수 방향: 충분히 움직일 때만 속도 방향으로 부드럽게 따라감 (저속 시 회전 떨림 방지)
+  if (sp > 4) {
+    let d = Math.atan2(a.vy, a.vx) - a.hd;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    a.hd += d * Math.min(1, 10 * dt);
+  }
+}
+// Boids 3원칙: 분리(Separation) · 정렬(Alignment) · 응집(Cohesion)
+function boids(a, grid, range, sepR, sp, wAlign, wCoh, out) {
+  const nb = grid.neighbors(a.x, a.y, range, a, _nb);
+  if (!nb.length) return 0;
+  let sx = 0, sy = 0, ax = 0, ay = 0, cx = 0, cy = 0;
+  for (let i = 0; i < nb.length; i++) {
+    const o = nb[i], dx = a.x - o.x, dy = a.y - o.y, d2 = dx * dx + dy * dy + 0.01;
+    if (d2 < sepR * sepR) { const d = Math.sqrt(d2); sx += dx / d * (sepR - d) / sepR; sy += dy / d * (sepR - d) / sepR; }
+    ax += o.vx; ay += o.vy; cx += o.x; cy += o.y;
+  }
+  const n = nb.length;
+  out.x += sx * sp * 1.6 + (ax / n - a.vx) * wAlign;
+  cx = cx / n - a.x; cy = cy / n - a.y;
+  const cd = Math.hypot(cx, cy) || 1;
+  out.x += cx / cd * sp * wCoh; out.y += cy / cd * sp * wCoh;
+  out.y += sy * sp * 1.6 + (ay / n - a.vy) * wAlign;
+  return n;
+}
+
+const _dv = { x: 0, y: 0 };
+function stepHerbivores(w, F, dt) {
+  const c = w.cfg, list = w.herbs, rng = w.rng;
+  const sp = c.herbivoreBaseSpeed * F.speedMul;            // 실제 최고 속도 = 기본 속도 × 수온 배율
+  const metab = c.herbivoreBaseMetabolism * F.metabMul;    // 초당 에너지 소모 = 기본 대사량 × 수온 배율
+  const thr = c.herbivoreReproduceThreshold, eCap = thr * 1.5;
+  const born = [];
+  for (let i = 0; i < list.length; i++) {
+    const h = list[i]; if (h.dead) continue;
+    _dv.x = 0; _dv.y = 0;
+    let lim = sp;
+    const threat = w.carns.length ? w.carnGrid.nearest(h.x, h.y, c.herbivoreFleeRange, null) : null;
+    let food = null;
+    if (threat) {
+      // 도주: 포식자 반대 방향으로 전력 질주 (순간 가속 1.15배)
+      const dx = h.x - threat.x, dy = h.y - threat.y, d = Math.hypot(dx, dy) || 1;
+      _dv.x += dx / d * sp * 1.6; _dv.y += dy / d * sp * 1.6; lim = sp * 1.15;
+      h.wa = Math.atan2(dy, dx);
+    } else {
+      food = w.plantGrid.nearest(h.x, h.y, c.herbivoreSightRange, null);
+      if (food) {
+        const dx = food.x - h.x, dy = food.y - h.y, d = Math.hypot(dx, dy) || 1;
+        _dv.x += dx / d * sp; _dv.y += dy / d * sp; h.wa = Math.atan2(dy, dx);
+      } else {
+        // 배회: 방향을 천천히 무작위로 틀며 탐색
+        h.wa += (rng() - 0.5) * 5 * dt;
+        turnFromWall(h, 50, dt);
+        _dv.x += Math.cos(h.wa) * sp * 0.75; _dv.y += Math.sin(h.wa) * sp * 0.75;
+      }
+    }
+    boids(h, w.herbGrid, 36, 12, sp, 0.25, food ? 0.1 : 0.3, _dv);
+    wallSteer(h, sp, _dv);
+    integrate(h, _dv.x, _dv.y, lim, dt);
+
+    // 섭취 판정
+    if (food && !food.dead) {
+      const dx = food.x - h.x, dy = food.y - h.y;
+      if (dx * dx + dy * dy < 64) { food.dead = true; h.e = Math.min(eCap, h.e + food.e); }
+    }
+    // 대사 (아사 판정)
+    h.e -= metab * dt; h.cd -= dt;
+    if (h.e <= 0) { h.dead = true; w.stats.starvedH++; emit(w, { type: 'death', x: h.x, y: h.y, kind: 'herb' }); continue; }
+    // 세포분열: 에너지 ≥ 임계치 + 쿨다운 종료 + 주변에 동족 존재(정족수 감지)
+    if (h.e >= thr && h.cd <= 0 && list.length + born.length < c.maxHerbivores) {
+      if (w.herbGrid.nearest(h.x, h.y, c.herbivoreMateRange, h)) {
+        h.e *= 0.5; h.cd = c.herbivoreReproCooldown;
+        const ch = makeAgent(w, h.x + (rng() - .5) * 6, h.y + (rng() - .5) * 6, h.e);
+        ch.cd = c.herbivoreReproCooldown; ch.vx = -h.vx; ch.vy = -h.vy;
+        born.push(ch); w.stats.bornH++;
+        emit(w, { type: 'birth', x: h.x, y: h.y, kind: 'herb' });
+      }
+    }
+  }
+  for (let i = 0; i < born.length; i++) list.push(born[i]);
+}
+
+function stepCarnivores(w, F, dt) {
+  const c = w.cfg, list = w.carns, rng = w.rng;
+  const sp = c.carnivoreBaseSpeed * F.speedMul;
+  const metab = c.carnivoreBaseMetabolism * F.metabMul;
+  const thr = c.carnivoreReproduceThreshold, eCap = thr * 1.5;
+  const born = [];
+  for (let i = 0; i < list.length; i++) {
+    const k = list[i]; if (k.dead) continue;
+    _dv.x = 0; _dv.y = 0;
+    let prey = null, lim = sp;
+    k.dg -= dt;
+    if (k.dg <= 0) prey = w.herbGrid.nearest(k.x, k.y, c.carnivoreSightRange, null);
+    if (prey) {
+      // 추격: 먹잇감의 0.3초 뒤 예측 위치를 향해 조향 (Pursuit)
+      const tx = prey.x + prey.vx * 0.3, ty = prey.y + prey.vy * 0.3;
+      const dx = tx - k.x, dy = ty - k.y, d = Math.hypot(dx, dy) || 1;
+      _dv.x += dx / d * sp * 1.3; _dv.y += dy / d * sp * 1.3; k.wa = Math.atan2(dy, dx);
+    } else {
+      // 소화 중이거나 먹잇감 없음 → 독립 배회 (영역 사냥꾼)
+      k.wa += (rng() - 0.5) * 4 * dt;
+      turnFromWall(k, 70, dt);
+      const slow = k.dg > 0 ? 0.45 : 0.8;
+      _dv.x += Math.cos(k.wa) * sp * slow; _dv.y += Math.sin(k.wa) * sp * slow;
+      // 짝 찾기: 번식 반경 안에 동족이 하나도 없을 때만 가장 가까운 동족 쪽으로 이동
+      if (!w.carnGrid.nearest(k.x, k.y, c.carnivoreMateRange * 0.85, k)) {
+        const mate = w.carnGrid.nearest(k.x, k.y, 520, k);
+        if (mate) { const dx = mate.x - k.x, dy = mate.y - k.y, d = Math.hypot(dx, dy) || 1; _dv.x += dx / d * sp * 0.4; _dv.y += dy / d * sp * 0.4; }
+      }
+      if (k.dg > 0) lim = sp * 0.6;
+    }
+    // 영역성: 정렬·응집 없이 분리만 넓게 적용 → 육식끼리 서로 거리를 두고 퍼짐
+    boids(k, w.carnGrid, c.carnivoreSpacing, c.carnivoreSpacing, sp * 0.7, 0, 0, _dv);
+    // 추격 중에는 벽 반발을 약하게 (벽에 붙은 먹잇감 앞에서 멈칫거리지 않도록)
+    wallSteer(k, sp, _dv, prey ? 25 : 60, prey ? 0.6 : 1.6);
+    integrate(k, _dv.x, _dv.y, lim, dt);
+
+    // 포식 판정: 접촉 시 초식 즉사, 고정 에너지 획득
+    if (prey && !prey.dead) {
+      const dx = prey.x - k.x, dy = prey.y - k.y;
+      if (dx * dx + dy * dy < 100) {
+        prey.dead = true; w.stats.eaten++;
+        k.e = Math.min(eCap, k.e + c.carnivoreEnergyYield); k.dg = c.carnivoreDigestTime;
+        emit(w, { type: 'kill', x: prey.x, y: prey.y });
+      }
+    }
+    k.e -= metab * dt; k.cd -= dt;
+    if (k.e <= 0) { k.dead = true; w.stats.starvedC++; emit(w, { type: 'death', x: k.x, y: k.y, kind: 'carn' }); continue; }
+    if (k.e >= thr && k.cd <= 0 && list.length + born.length < c.maxCarnivores) {
+      if (w.carnGrid.nearest(k.x, k.y, c.carnivoreMateRange, k)) {
+        k.e *= 0.5; k.cd = c.carnivoreReproCooldown;
+        const ch = makeAgent(w, k.x + (rng() - .5) * 8, k.y + (rng() - .5) * 8, k.e);
+        ch.cd = c.carnivoreReproCooldown; ch.vx = -k.vx; ch.vy = -k.vy;
+        born.push(ch); w.stats.bornC++;
+        emit(w, { type: 'birth', x: k.x, y: k.y, kind: 'carn' });
+      }
+    }
+  }
+  for (let i = 0; i < born.length; i++) list.push(born[i]);
+}
+
+function stepWorld(w, dt) {
+  if (w.state !== 'playing') return;
+  const c = w.cfg, F = envFactors(w);
+  w.t += dt;
+  w.marketTick = false;
+
+  // 식물 자연 생성: 누적기에 (초당 생성률 × dt)를 더하고 1 넘을 때마다 생성
+  w.plantAcc += F.plantRate * dt;
+  while (w.plantAcc >= 1) { w.plantAcc -= 1; addPlant(w, F.plantEnergy); }
+
+  w.plantGrid.build(w.plants); w.herbGrid.build(w.herbs); w.carnGrid.build(w.carns);
+  stepHerbivores(w, F, dt);
+  stepCarnivores(w, F, dt);
+
+  // 사망/섭취 개체 정리
+  w.plants = w.plants.filter(p => !p.dead);
+  w.herbs = w.herbs.filter(h => !h.dead);
+  w.carns = w.carns.filter(k => !k.dead);
+  populationWatch(w);
+
+  // 시세 타이머
+  w.market.timer -= dt;
+  if (w.market.timer <= 0) { w.market.timer += c.marketCycleSec; updateMarket(w); }
+
+  // 연구소 유지비 (잔고는 0 밑으로 내려가지 않음)
+  const up = Math.min(w.money, c.labUpkeepPerSec * dt);
+  w.money -= up; w.stats.upkeep += up;
+  // 체납 타이머: 잔고가 바닥난 채로 유예 시간이 지나면 파산
+  if (w.money <= 0.001) w.arrears += dt; else w.arrears = 0;
+
+  // 그래프 히스토리 (0.25초 간격, 최근 2분)
+  w.histAcc += dt;
+  if (w.histAcc >= 0.25) {
+    w.histAcc -= 0.25;
+    w.history.push({ h: w.herbs.length, c: w.carns.length, p: w.plants.length });
+    if (w.history.length > 480) w.history.shift();
+  }
+  checkEnd(w);
+}
+
+// 개체수 감시: 멸종·폭락 통계 및 경고 이벤트
+function populationWatch(w) {
+  const H = w.herbs.length, C = w.carns.length, s = w.stats;
+  if (H > s.maxH) s.maxH = H; if (C > s.maxC) s.maxC = C;
+  // 집단 아사(붕괴) 감지: 직전 고점(≥30) 대비 절반 이하로 떨어지면 1회
+  if (H > s.hPeak) s.hPeak = H;
+  else if (s.hPeak >= 30 && H < s.hPeak * 0.5) { s.crashes++; s.hPeak = H; }
+  if (w.prevH > 0 && H === 0) { s.herbExt++; emit(w, { type: 'toast', kind: 'bad', msg: '☠ 초식 세포 멸종 — 먹이사슬 붕괴' }); }
+  if (w.prevC > 0 && C === 0) { s.carnExt++; emit(w, { type: 'toast', kind: 'bad', msg: '☠ 육식 세포 멸종 — 생산 라인 중단' }); }
+  if (w.prevC >= 2 && C === 1) emit(w, { type: 'toast', kind: 'warn', msg: '⚠ 육식 1마리 — 짝이 없어 분열 불가' });
+  if (w.prevH >= 2 && H === 1) emit(w, { type: 'toast', kind: 'warn', msg: '⚠ 초식 1마리 — 짝이 없어 분열 불가' });
+  w.prevH = H; w.prevC = C;
+}
+
+function checkEnd(w) {
+  if (w.state !== 'playing') return;
+  if (w.money > w.stats.peakMoney) w.stats.peakMoney = w.money;
+  if (w.money >= w.cfg.targetMoney) { w.state = 'clear'; w.endTime = w.t; }
+  else if (w.herbs.length + w.carns.length === 0 && w.money < w.cfg.spawnHerbivoreCost) { w.state = 'over'; w.endTime = w.t; w.endReason = 'extinct'; }
+  else if (w.arrears >= w.cfg.arrearsGraceSec) { w.state = 'over'; w.endTime = w.t; w.endReason = 'arrears'; }
+}
+
+/* =====================================================================
+   [5] 시세 변동 로직 (마켓)
+   - 정규화 시세 p(0~1) → 실제 단가 = 최소 + p × (최대 - 최소)
+   ===================================================================== */
+function priceOf(c, kind, p) {
+  return kind === 'herb'
+    ? Math.round((c.herbivorePriceMin + p * (c.herbivorePriceMax - c.herbivorePriceMin)) * 10) / 10
+    : Math.round(c.carnivorePriceMin + p * (c.carnivorePriceMax - c.carnivorePriceMin));
+}
+function createMarket(w) {
+  const m = { timer: w.cfg.marketCycleSec, cycle: 0, event: '시장 개장', eventKind: '',
+    herb: { p: 0.5, price: 0, prev: 0, hist: [] }, carn: { p: 0.35, price: 0, prev: 0, hist: [] } };
+  for (const k of ['herb', 'carn']) { const s = m[k]; s.price = s.prev = priceOf(w.cfg, k, s.p); s.hist.push(s.price); }
+  return m;
+}
+function isHot(w, kind) { return w.market[kind].p >= w.cfg.hotThreshold; }
+function updateMarket(w) {
+  const m = w.market, c = w.cfg, rng = w.rng, H = m.herb, C = m.carn;
+  m.cycle++;
+  H.prev = H.price; C.prev = C.price;
+  // 초식: 완만한 평균회귀 랜덤워크 + 장주기 사인파 (안정 자산)
+  H.p = clamp(H.p + (0.5 - H.p) * 0.3 + gauss(rng) * 0.16 + Math.sin(w.t / 110) * 0.06, 0, 1);
+  // 육식: 큰 변동성 랜덤워크 + 급등/폭락 이벤트 (위험 자산)
+  const r = rng();
+  if (r < 0.16) { C.p = 0.82 + rng() * 0.18; m.event = '📈 육식 세포 수요 급등! 연구 기관 대량 매입'; m.eventKind = 'spike'; }
+  else if (r < 0.30) { C.p = rng() * 0.18; m.event = '📉 육식 세포 시세 폭락 — 공급 과잉 루머'; m.eventKind = 'crash'; }
+  else { C.p = clamp(C.p + (0.45 - C.p) * 0.35 + gauss(rng) * 0.26, 0, 1); m.event = '시세 갱신 — 정상 거래'; m.eventKind = ''; }
+  H.price = priceOf(c, 'herb', H.p); C.price = priceOf(c, 'carn', C.p);
+  H.hist.push(H.price); C.hist.push(C.price);
+  if (H.hist.length > 30) H.hist.shift(); if (C.hist.length > 30) C.hist.shift();
+  w.marketTick = true;
+  emit(w, { type: 'market' });
+  if (m.eventKind === 'spike') emit(w, { type: 'toast', kind: 'bad', msg: `📈 육식 시세 급등 $${C.price} — 매도 찬스` });
+}
+
+/* =====================================================================
+   [6] 플레이어 액션 — 매도 / 유료 개입
+   ===================================================================== */
+function sellSpecies(w, kind, pct) {
+  if (w.state !== 'playing') return null;
+  const list = kind === 'herb' ? w.herbs : w.carns, n = list.length;
+  if (n === 0) return null;
+  const count = Math.min(n, Math.ceil(n * pct));          // N% 올림 (최소 1마리)
+  const price = w.market[kind].price;
+  // 부분 Fisher-Yates로 무작위 표본 추출
+  const idx = list.map((_, i) => i);
+  for (let i = 0; i < count; i++) { const j = i + ((w.rng() * (n - i)) | 0); const t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
+  const sold = [];
+  for (let i = 0; i < count; i++) { const o = list[idx[i]]; o.dead = true; sold.push({ x: o.x, y: o.y }); }
+  if (kind === 'herb') w.herbs = list.filter(o => !o.dead); else w.carns = list.filter(o => !o.dead);
+  // 정산: 잔고 += 매도 수 × 현재 단가 − 고정 수수료
+  const gross = count * price, fee = w.cfg.harvestFee;
+  w.money = Math.max(0, w.money + gross - fee);
+  w.stats.revenue += gross; w.stats.fees += fee;
+  if (kind === 'herb') w.stats.soldH += count; else w.stats.soldC += count;
+  emit(w, { type: 'sell', kind, sold, price, gross, fee, count });
+  populationWatch(w);
+  checkEnd(w);
+  return { count, price, gross, fee };
+}
+function spawnHerbivores(w) {
+  const c = w.cfg; if (w.state !== 'playing' || w.money < c.spawnHerbivoreCost) return false;
+  w.money -= c.spawnHerbivoreCost; w.stats.spent += c.spawnHerbivoreCost;
+  for (let i = 0; i < c.spawnHerbivoreCount; i++) addHerbAt(w, WORLD_W / 2 + (w.rng() - .5) * 60, WORLD_H / 2 + (w.rng() - .5) * 60, c.herbivoreStartEnergy);
+  emit(w, { type: 'spawn', kind: 'herb' }); w.prevH = w.herbs.length; return true;
+}
+function spawnCarnivores(w) {
+  const c = w.cfg; if (w.state !== 'playing' || w.money < c.spawnCarnivoreCost) return false;
+  w.money -= c.spawnCarnivoreCost; w.stats.spent += c.spawnCarnivoreCost;
+  for (let i = 0; i < c.spawnCarnivoreCount; i++) addCarnAt(w, WORLD_W / 2 + (w.rng() - .5) * 40, WORLD_H / 2 + (w.rng() - .5) * 40, c.carnivoreStartEnergy);
+  emit(w, { type: 'spawn', kind: 'carn' }); w.prevC = w.carns.length; return true;
+}
+function emergencyFeed(w) {
+  const c = w.cfg; if (w.state !== 'playing' || w.money < c.emergencyFeedCost) return false;
+  w.money -= c.emergencyFeedCost; w.stats.spent += c.emergencyFeedCost;
+  const F = envFactors(w);
+  for (let i = 0; i < c.emergencyFeedCount; i++) addPlant(w, F.plantEnergy);
+  emit(w, { type: 'spawn', kind: 'plant' }); return true;
+}
+
+/* =====================================================================
+   [7] 밸런스 검증 봇 (8장 전략) & 헤드리스 시뮬레이터
+   ===================================================================== */
+const BOTS = {
+  greedy: {
+    label: '방치/탐욕 (Greedy)', goal: '10분 내 멸종·파산',
+    tick() {},
+    // 고점이면 무조건 50% 매도, 스폰·레버 조작 없음
+    market(w) { if (isHot(w, 'herb')) sellSpecies(w, 'herb', 0.5); if (isHot(w, 'carn')) sellSpecies(w, 'carn', 0.5); },
+    pass(r) { return r.outcome === 'BANKRUPT' && r.time <= 600; }
+  },
+  hoarder: {
+    label: '생태계 방임 (Hoarder)', goal: '수익 0 · 폭증/집단 아사 반복',
+    // 레버만 만지고(초식 늘리기에 집중) 판매는 하지 않음. 관상용으로 육식을 한 번 들여놓음
+    tick(w) {
+      const H = w.herbs.length;
+      w.env.light = H < 40 ? 0.9 : 0.6; w.env.nutrient = 0.7; w.env.temp = 0.5;
+      if (!w._bought && H > 30 && w.money >= w.cfg.spawnCarnivoreCost) { spawnCarnivores(w); w._bought = true; }
+    },
+    market() {},
+    pass(r) { return r.peakMoney <= r.startMoney + 1 && (r.crashes >= 1 || r.outcome === 'BANKRUPT'); }
+  },
+  eco: {
+    label: '생태학 트레이더 (Eco-Trader)', goal: '20분 내 $100,000',
+    tick(w) {
+      const c = w.cfg, H = w.herbs.length, C = w.carns.length;
+      const ratio = C > 0 ? H / C : 99;                 // 육식 1마리당 초식 수
+      // 레버: 초식이 부족하면 일조/영양을 올려 식물을 늘리고, 육식이 굶주리면 수온을 낮춤
+      w.env.light = H < 60 ? 1.0 : H > 160 ? 0.55 : 0.8;
+      w.env.nutrient = H < 60 ? 0.9 : 0.7;
+      w.env.temp = ratio > 8 ? 0.6 : ratio < 3 ? 0.3 : 0.45;
+      // 개입: 멸종 위기 시에만 지출
+      if (H < 6 && w.money >= c.spawnHerbivoreCost + 20) spawnHerbivores(w);
+      if (C < 2 && H >= 30 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
+      // 육식 과밀(초식 대비)일 때 시세와 무관하게 잉여분 정리 → 붕괴 방지
+      if (C > 8 && ratio < 2.2) ecoSell(w, 'carn', 6);
+      if (H > 220) sellSpecies(w, 'herb', 0.3);
+    },
+    market(w) {
+      const C = w.carns.length;
+      // 육식 고점: 최소 번식 종자를 남기고 잉여분만 매도
+      if (w.market.carn.p >= 0.6) ecoSell(w, 'carn', Math.max(4, Math.round(C * 0.25)));
+      if (isHot(w, 'herb') && w.herbs.length > 120) sellSpecies(w, 'herb', 0.3);
+    },
+    pass(r) { return r.outcome === 'CLEAR' && r.time <= 1200; }
+  }
+};
+// 남길 종자 수(keep)를 지키는 선에서 50% / 30% 버튼을 반복 클릭
+function ecoSell(w, kind, keep) {
+  for (let guard = 0; guard < 6; guard++) {
+    const n = (kind === 'herb' ? w.herbs : w.carns).length;
+    if (n - Math.ceil(n * 0.5) >= keep && n >= 6) sellSpecies(w, kind, 0.5);
+    else if (n - Math.ceil(n * 0.3) >= keep && n >= 4) sellSpecies(w, kind, 0.3);
+    else break;
+  }
+}
+
+// 제너레이터: UI를 멈추지 않도록 일정 스텝마다 진행률을 yield
+function* simulateBot(botKey, cfg, seed, maxTime = 1200) {
+  const w = createWorld(Object.assign({}, cfg), { seed, headless: true });
+  const bot = BOTS[botKey];
+  let tickAcc = 0, steps = 0;
+  while (w.state === 'playing' && w.t < maxTime) {
+    stepWorld(w, FIXED_DT);
+    if (w.marketTick) bot.market(w);
+    tickAcc += FIXED_DT;
+    if (tickAcc >= 0.5) { tickAcc -= 0.5; bot.tick(w); }
+    if (++steps % 600 === 0) yield w.t / maxTime;
+  }
+  const outcome = w.state === 'clear' ? 'CLEAR' : w.state === 'over' ? 'BANKRUPT' : 'TIMEOUT';
+  const r = { bot: botKey, seed, outcome, time: w.state === 'playing' ? w.t : w.endTime, money: w.money,
+    startMoney: cfg.startMoney, peakMoney: w.stats.peakMoney, ...w.stats, H: w.herbs.length, C: w.carns.length };
+  r.pass = bot.pass(r);
+  return r;
+}
+function runBotSync(botKey, cfg, seed, maxTime) {
+  const g = simulateBot(botKey, cfg, seed, maxTime); let s;
+  while (!(s = g.next()).done);
+  return s.value;
+}
+// ==SIM-END==
+
+/* =====================================================================
+   [8] UI 공통 — DOM 참조, 포맷터, 토스트
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtP = (kind, v) => kind === 'herb' ? '$' + v.toFixed(1) : '$' + Math.round(v).toLocaleString('en-US');
+const mmss = t => { t = Math.max(0, Math.floor(t)); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+
+function toast(msg, kind = '') {
+  const box = $('toasts'), d = document.createElement('div');
+  d.className = 'toast ' + kind; d.textContent = msg;
+  box.appendChild(d);
+  while (box.children.length > 5) box.removeChild(box.firstChild);
+  setTimeout(() => { d.style.opacity = '0'; setTimeout(() => d.remove(), 500); }, 3800);
+}
+
+/* =====================================================================
+   [9] 게임 상태 머신 — START_MENU → PLAYING → GAME_OVER / GAME_CLEAR
+   ===================================================================== */
+let world = null, demo = null, gameState = 'START_MENU', speed = 1, acc = 0, lastTs = performance.now();
+let selLever = 'light', uiTimer = 0, tradeLog = [];
+const effects = [];
+
+function enterState(s) {
+  gameState = s;
+  const ov = $('overlay');
+  if (s === 'START_MENU') {
+    demo = createWorld(GAME_CONFIG, { herbs: 40, carns: 4, headless: true }); demo.money = 1e12;
+    ov.className = '';
+    ov.innerHTML = `<div class="ovbox">
+      <h1>SELL THE PREDATOR</h1><h2>BREED &amp; BLEED</h2>
+      <div class="tag">BIO-SPHERE: MARKET &amp; MUTATION</div>
+      <ul>
+        <li><b class="g">● 식물</b> → <b class="c">▲ 초식 세포</b> → <b class="r">◆ 육식 세포</b> 먹이사슬을 밀폐 배양조에서 키웁니다.</li>
+        <li>환경 레버(일조량·수온·영양)는 <b class="g">무료</b>. 방치하면 생태계는 반드시 한쪽으로 쏠려 붕괴합니다.</li>
+        <li>세포는 <b>근처에 동족이 있어야만</b> 분열합니다. 다 팔아버리면 대가 끊깁니다 — 최소 번식 종자를 남기세요.</li>
+        <li>육식 세포는 비싸게 팔리지만 시세가 널뛰기합니다. 호가창이 <b class="r">붉게 점멸</b>할 때가 고점입니다.</li>
+        <li>연구소 유지비가 매초 빠져나갑니다. 잔고 $0으로 ${GAME_CONFIG.arrearsGraceSec}초 체납하거나, 전멸 후 복원 자금이 없으면 <b class="r">파산</b>.</li>
+        <li>목표: 잔고 <b style="color:var(--gold)">${fmt(GAME_CONFIG.targetMoney)}</b> 달성.</li>
+      </ul>
+      <button class="bigbtn" id="ovStart">배양 시작 (START)</button>
+    </div>`;
+    $('ovStart').onclick = () => enterState('PLAYING');
+  } else if (s === 'PLAYING') {
+    world = createWorld(GAME_CONFIG);
+    demo = null; acc = 0; effects.length = 0; tradeLog = [];
+    $('toasts').innerHTML = ''; renderTradeLog();
+    ov.className = 'hidden'; ov.innerHTML = '';
+    syncLevers(); drawSparks(); selectLever('light');
+    toast('🧫 배양 시작 — 초식 세포가 늘어나면 육식 세포를 투입하세요', 'good');
+  } else if (s === 'GAME_OVER' || s === 'GAME_CLEAR') {
+    const w = world, st = w.stats, over = s === 'GAME_OVER';
+    const reason = !over ? `${mmss(w.endTime)} 만에 목표 잔고 ${fmt(w.cfg.targetMoney)}에 도달했습니다.`
+      : w.endReason === 'arrears' ? `잔고 $0 상태로 ${w.cfg.arrearsGraceSec}초간 유지비를 체납해 연구소가 폐쇄되었습니다.`
+      : `모든 세포가 멸종했고, 생태계를 복원할 자금(${fmt(w.cfg.spawnHerbivoreCost)})도 남지 않았습니다.`;
+    ov.className = '';
+    ov.innerHTML = `<div class="ovbox ${over ? 'over' : 'clear'}">
+      <div class="emblem">${over ? '☠' : '✦'}</div>
+      <h1>${over ? 'Ecosystem Collapsed &amp; Bankrupted' : 'Ecosystem Stabilized. Target Reached.'}</h1>
+      <p style="margin-top:10px;color:var(--dim)">${reason}</p>
+      <div class="endstats">
+        <div>경과 시간 <b>${mmss(w.endTime)}</b></div><div>최종 잔고 <b>${fmt(w.money)}</b></div>
+        <div>총 매출 <b>${fmt(st.revenue)}</b></div><div>최고 잔고 <b>${fmt(st.peakMoney)}</b></div>
+        <div>매도 (초식/육식) <b>${st.soldH} / ${st.soldC}</b></div><div>수수료 · 유지비 <b>${fmt(st.fees + st.upkeep)}</b></div>
+        <div>개입 지출 <b>${fmt(st.spent)}</b></div><div>최대 개체 (초식/육식) <b>${st.maxH} / ${st.maxC}</b></div>
+        <div>분열 (초식/육식) <b>${st.bornH} / ${st.bornC}</b></div><div>아사 (초식/육식) <b>${st.starvedH} / ${st.starvedC}</b></div>
+        <div>포식된 초식 <b>${st.eaten}</b></div><div>멸종 (초식/육식) <b>${st.herbExt} / ${st.carnExt}</b></div>
+      </div>
+      <button class="bigbtn" id="ovRestart">다시 배양 (RESTART)</button>
+    </div>`;
+    $('ovRestart').onclick = () => enterState('PLAYING');
+  }
+}
+
+/* =====================================================================
+   [10] 플레이어 입력 → 시뮬레이션 액션 연결
+   ===================================================================== */
+function doSell(kind, pct) {
+  if (gameState !== 'PLAYING') return;
+  const r = sellSpecies(world, kind, pct);
+  if (!r) toast(`매도할 ${kind === 'herb' ? '초식' : '육식'} 세포가 없습니다`, 'warn');
+}
+function doSpawn(kind) {
+  if (gameState !== 'PLAYING') return;
+  const ok = kind === 'herb' ? spawnHerbivores(world) : kind === 'carn' ? spawnCarnivores(world) : emergencyFeed(world);
+  if (!ok) toast('잔고가 부족합니다', 'warn');
+}
+function setSpeed(v) {
+  speed = v;
+  document.querySelectorAll('#speedBtns button').forEach(b => b.classList.toggle('on', +b.dataset.speed === v));
+}
+const LEVERS = { light: 'lvLight', temp: 'lvTemp', nutrient: 'lvNut' };
+function selectLever(k) {
+  selLever = k;
+  document.querySelectorAll('.lever').forEach(el => el.classList.toggle('sel', el.dataset.lever === k));
+}
+function setLever(k, v) {
+  if (!world) return;
+  world.env[k] = clamp(Math.round(v * 100) / 100, 0, 1);
+  $(LEVERS[k]).value = Math.round(world.env[k] * 100);
+}
+function syncLevers() { for (const k in LEVERS) $(LEVERS[k]).value = Math.round(world.env[k] * 100); }
+
+document.querySelectorAll('.sell').forEach(b => b.addEventListener('click', e => { doSell(b.dataset.kind, +b.dataset.pct); b.blur(); }));
+$('bSpawnH').onclick = e => { doSpawn('herb'); e.currentTarget.blur(); };
+$('bSpawnC').onclick = e => { doSpawn('carn'); e.currentTarget.blur(); };
+$('bFeed').onclick = e => { doSpawn('plant'); e.currentTarget.blur(); };
+document.querySelectorAll('#speedBtns button').forEach(b => b.addEventListener('click', () => { setSpeed(+b.dataset.speed); b.blur(); }));
+for (const k in LEVERS) {
+  const el = $(LEVERS[k]);
+  el.addEventListener('input', () => { selectLever(k); setLever(k, el.value / 100); });
+  el.addEventListener('focus', () => selectLever(k));
+}
+document.querySelectorAll('.lever').forEach(el => el.addEventListener('mousedown', () => selectLever(el.dataset.lever)));
+
+// 키보드 단축키 (한글 IME 상태에서도 동작하도록 e.code 사용)
+document.addEventListener('keydown', e => {
+  if (e.code === 'Backquote') { e.preventDefault(); toggleTuner(); return; }
+  if (e.target.closest && e.target.closest('#tuner')) { if (e.code === 'Escape') toggleTuner(); return; }
+  if (e.code === 'Escape' && $('tuner').classList.contains('open')) { toggleTuner(); return; }
+  if (gameState !== 'PLAYING') {
+    if ((e.code === 'Enter' || e.code === 'Space') && $('overlay').querySelector('.bigbtn')) { e.preventDefault(); $('overlay').querySelector('.bigbtn').click(); }
+    return;
+  }
+  const order = [1, 2, 4];
+  switch (e.code) {
+    case 'Digit1': case 'Numpad1': if (!e.repeat) doSell('herb', 0.3); break;
+    case 'Digit2': case 'Numpad2': if (!e.repeat) doSell('carn', 0.3); break;
+    case 'KeyQ': selectLever('light'); break;
+    case 'KeyW': selectLever('temp'); break;
+    case 'KeyE': selectLever('nutrient'); break;
+    case 'ArrowLeft': case 'ArrowDown': e.preventDefault(); setLever(selLever, world.env[selLever] - 0.05); break;
+    case 'ArrowRight': case 'ArrowUp': e.preventDefault(); setLever(selLever, world.env[selLever] + 0.05); break;
+    case 'KeyS': if (!e.repeat) doSpawn('plant'); break;
+    case 'Equal': case 'NumpadAdd': setSpeed(order[Math.min(2, order.indexOf(speed) + 1)]); break;
+    case 'Minus': case 'NumpadSubtract': setSpeed(order[Math.max(0, order.indexOf(speed) - 1)]); break;
+  }
+});
+
+/* =====================================================================
+   [11] 렌더링 — 배양조(Boids 개체), 이펙트, 로트카-볼테라 그래프
+   ===================================================================== */
+const cv = $('cv'), ctx = cv.getContext('2d');
+let dpr = 1, cw = 0, ch = 0, view = { s: 1, ox: 0, oy: 0 };
+function resize() {
+  const r = $('stage').getBoundingClientRect();
+  dpr = Math.min(2, window.devicePixelRatio || 1); cw = r.width; ch = r.height;
+  cv.width = Math.max(1, Math.round(cw * dpr)); cv.height = Math.max(1, Math.round(ch * dpr));
+  for (const id of ['sparkH', 'sparkC']) { const c = $(id); c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr); }
+  drawSparks();
+}
+window.addEventListener('resize', resize);
+
+// 발광 스프라이트 (방사형 그라디언트를 미리 그려 drawImage로 재사용 — shadowBlur보다 훨씬 빠름)
+function glowSprite(rgb, size) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gr.addColorStop(0, `rgba(${rgb},0.6)`); gr.addColorStop(0.3, `rgba(${rgb},0.2)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, size, size); return c;
+}
+const SPR = { plant: glowSprite('57,255,138', 64), herb: glowSprite('34,228,255', 64), carn: glowSprite('255,45,85', 96) };
+
+function renderWorld(w, now) {
+  const c = w.cfg;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#02060a'; ctx.fillRect(0, 0, cw, ch);
+  const s = Math.min(cw / WORLD_W, ch / WORLD_H) * 0.985;
+  view = { s, ox: (cw - WORLD_W * s) / 2, oy: (ch - WORLD_H * s) / 2 };
+  ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * view.ox, dpr * view.oy);
+
+  // 배양조 바닥 + 측정 격자
+  ctx.fillStyle = '#050A10'; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+  const amb = ctx.createRadialGradient(WORLD_W / 2, WORLD_H / 2, 50, WORLD_W / 2, WORLD_H / 2, WORLD_W * 0.7);
+  amb.addColorStop(0, 'rgba(20,60,90,0.18)'); amb.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = amb; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+  ctx.strokeStyle = 'rgba(34,228,255,0.05)'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = 60; x < WORLD_W; x += 60) { ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); }
+  for (let y = 60; y < WORLD_H; y += 60) { ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(34,228,255,0.25)'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
+  ctx.fillStyle = 'rgba(93,125,148,0.6)'; ctx.font = '12px Consolas, monospace';
+  ctx.fillText('CULTURE TANK 01 // ' + WORLD_W + '×' + WORLD_H + 'µm', 12, WORLD_H - 12);
+
+  // 1) 발광 레이어 (가산 합성)
+  ctx.globalCompositeOperation = 'lighter';
+  for (const p of w.plants) { const k = Math.min(1, (w.t - p.bt) * 4); ctx.drawImage(SPR.plant, p.x - 10 * k, p.y - 10 * k, 20 * k, 20 * k); }
+  for (const h of w.herbs) ctx.drawImage(SPR.herb, h.x - 13, h.y - 13, 26, 26);
+  for (const k of w.carns) { const g = k.dg > 0 ? 54 : 42; ctx.drawImage(SPR.carn, k.x - g / 2, k.y - g / 2, g, g); }
+  ctx.globalCompositeOperation = 'source-over';
+
+  // 2) 식물: 녹색 원 (칼로리가 클수록 큼)
+  ctx.fillStyle = '#39ff8a'; ctx.beginPath();
+  for (const p of w.plants) {
+    const k = Math.min(1, (w.t - p.bt) * 4), r = (1.4 + clamp(p.e / c.plantEnergyBase, 0.3, 1.8) * 1.2) * k;
+    ctx.moveTo(p.x + r, p.y); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  }
+  ctx.fill();
+
+  // 3) 초식: 시안 삼각형 (이동 방향으로 회전, 에너지에 비례해 크기 변화, 굶주리면 깜빡임)
+  const hThr = c.herbivoreReproduceThreshold;
+  ctx.strokeStyle = 'rgba(200,250,255,0.8)'; ctx.lineWidth = 0.8;
+  for (const h of w.herbs) {
+    const a = h.hd, ca = Math.cos(a), sa = Math.sin(a);
+    const r = (3.4 + Math.min(1.2, h.e / hThr) * 2.2) * Math.min(1, 0.4 + (w.t - h.bt) * 3);
+    const bx = h.x - ca * r, by = h.y - sa * r;
+    ctx.globalAlpha = h.e < hThr * 0.12 ? 0.35 + 0.3 * Math.sin(now * 14 + h.id) : 0.95;
+    ctx.fillStyle = '#22e4ff';
+    ctx.beginPath();
+    ctx.moveTo(h.x + ca * r * 1.7, h.y + sa * r * 1.7);
+    ctx.lineTo(bx - sa * r * 0.95, by + ca * r * 0.95);
+    ctx.lineTo(bx + sa * r * 0.95, by - ca * r * 0.95);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // 4) 육식: 크림슨 마름모 (이동 방향으로 회전, 소화 중이면 백색 코어)
+  const cThr = c.carnivoreReproduceThreshold, few = w.carns.length <= 3;
+  for (const k of w.carns) {
+    const a = k.hd, ca = Math.cos(a), sa = Math.sin(a);
+    const r = (5 + Math.min(1.2, k.e / cThr) * 3) * Math.min(1, 0.4 + (w.t - k.bt) * 3);
+    ctx.globalAlpha = k.e < cThr * 0.12 ? 0.35 + 0.35 * Math.sin(now * 12 + k.id) : 1;
+    ctx.fillStyle = '#ff2d55'; ctx.strokeStyle = 'rgba(255,190,205,0.9)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(k.x + ca * r * 1.8, k.y + sa * r * 1.8);
+    ctx.lineTo(k.x - sa * r * 0.85, k.y + ca * r * 0.85);
+    ctx.lineTo(k.x - ca * r * 1.1, k.y - sa * r * 1.1);
+    ctx.lineTo(k.x + sa * r * 0.85, k.y - ca * r * 0.85);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    if (k.dg > 0) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(k.x, k.y, 1.8, 0, Math.PI * 2); ctx.fill(); }
+    // 개체수가 적으면 번식 가능 반경(정족수)을 표시 — MVP 경고
+    if (few) {
+      ctx.globalAlpha = 0.35; ctx.setLineDash([4, 6]); ctx.strokeStyle = '#ff2d55';
+      ctx.beginPath(); ctx.arc(k.x, k.y, c.carnivoreMateRange, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// 이펙트: 링(분열/아사/포식/스폰) + 플로팅 텍스트(매도 금액)
+function pushFx(fx) { effects.push(fx); if (effects.length > 420) effects.splice(0, effects.length - 420); }
+function processEvents(w) {
+  for (const e of w.events) {
+    switch (e.type) {
+      case 'birth': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 2, r1: e.kind === 'carn' ? 22 : 12, life: 0.5, t: 0, col: e.kind === 'carn' ? '255,45,85' : '34,228,255' }); break;
+      case 'death': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 8, r1: 1, life: 0.8, t: 0, col: '120,140,155' }); break;
+      case 'kill': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 3, r1: 16, life: 0.35, t: 0, col: '255,120,140' }); break;
+      case 'spawn': pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 10, r1: e.kind === 'plant' ? 400 : 90, life: 0.8, t: 0, col: e.kind === 'carn' ? '255,45,85' : e.kind === 'herb' ? '34,228,255' : '57,255,138' }); break;
+      case 'market': drawSparks(); break;
+      case 'toast': toast(e.msg, e.kind); break;
+      case 'sell': onSellFx(e); break;
+    }
+  }
+  w.events.length = 0;
+}
+function onSellFx(e) {
+  const col = e.kind === 'herb' ? '#9ff3ff' : '#ffd166', txt = '+' + fmtP(e.kind, e.price);
+  e.sold.forEach((p, i) => {
+    if (i < 40) pushFx({ k: 'text', x: p.x, y: p.y, text: txt, col, big: e.kind === 'carn', life: 1.5, t: -i * 0.02 });
+    pushFx({ k: 'ring', x: p.x, y: p.y, r0: 2, r1: 18, life: 0.5, t: 0, col: '255,209,102' });
+  });
+  const net = e.gross - e.fee;
+  tradeLog.unshift(`${mmss(world.t)} ${e.kind === 'herb' ? '▲초식' : '◆육식'} ${e.count}마리 × ${fmtP(e.kind, e.price)} = <b>+${fmt(e.gross)}</b> (수수료 -${fmt(e.fee)})`);
+  tradeLog.length = Math.min(tradeLog.length, 5); renderTradeLog();
+  const m = $('hMoney'); m.classList.remove('flash-up'); void m.offsetWidth; m.classList.add('flash-up');
+  if (e.kind === 'carn' && net >= 1000) toast(`💸 육식 ${e.count}마리 매도 — 순익 ${fmt(net)}`, 'good');
+}
+function renderTradeLog() {
+  $('tradeLog').innerHTML = tradeLog.length ? tradeLog.map(t => `<div>${t}</div>`).join('') : '<div>체결 내역 없음</div>';
+}
+function renderEffects(rdt) {
+  const s = view.s;
+  ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * view.ox, dpr * view.oy);
+  ctx.textAlign = 'center';
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const f = effects[i]; f.t += rdt;
+    if (f.t >= f.life) { effects.splice(i, 1); continue; }
+    if (f.t < 0) continue;
+    const u = f.t / f.life;
+    if (f.k === 'ring') {
+      ctx.strokeStyle = `rgba(${f.col},${(1 - u) * 0.8})`; ctx.lineWidth = 1.5 / s;
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r0 + (f.r1 - f.r0) * u, 0, Math.PI * 2); ctx.stroke();
+    } else {
+      ctx.globalAlpha = u < 0.75 ? 1 : (1 - u) * 4;
+      ctx.font = `bold ${(f.big ? 17 : 12) / s}px Consolas, monospace`;
+      ctx.fillStyle = '#000'; ctx.fillText(f.text, f.x + 1 / s, f.y - u * 40 + 1 / s);
+      ctx.fillStyle = f.col; ctx.fillText(f.text, f.x, f.y - u * 40);
+      ctx.globalAlpha = 1;
+    }
+  }
+  ctx.textAlign = 'left';
+}
+
+// 로트카-볼테라 실시간 그래프 (캔버스 우측 상단 반투명 오버레이)
+function niceMax(v) { const steps = [5, 10, 20, 25, 50, 100, 150, 200, 250, 300, 400, 500]; for (const s of steps) if (v <= s) return s; return Math.ceil(v / 100) * 100; }
+function renderGraph(w) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const gw = Math.min(380, cw * 0.42), gh = Math.min(160, ch * 0.32), gx = cw - gw - 12, gy = 12;
+  ctx.fillStyle = 'rgba(4,10,16,0.78)'; ctx.strokeStyle = 'rgba(34,228,255,0.28)'; ctx.lineWidth = 1;
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(gx, gy, gw, gh, 6); else ctx.rect(gx, gy, gw, gh); ctx.fill(); ctx.stroke();
+  ctx.font = '10px Consolas, monospace'; ctx.fillStyle = 'rgba(160,190,210,0.75)';
+  ctx.fillText('LOTKA–VOLTERRA MONITOR · 최근 2분', gx + 10, gy + 15);
+  const H = w.herbs.length, C = w.carns.length;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#ff2d55'; ctx.fillText('◆ ' + C, gx + gw - 10, gy + 15);
+  ctx.fillStyle = '#22e4ff'; ctx.fillText('▲ ' + H, gx + gw - 52, gy + 15);
+  ctx.fillStyle = 'rgba(57,255,138,0.8)'; ctx.fillText('● ' + w.plants.length, gx + gw - 98, gy + 15);
+  ctx.textAlign = 'left';
+
+  const px = gx + 30, py = gy + 24, pw = gw - 60, ph = gh - 36, hist = w.history, N = 480;
+  let mh = 0, mc = 0;
+  for (const d of hist) { if (d.h > mh) mh = d.h; if (d.c > mc) mc = d.c; }
+  const hMax = niceMax(Math.max(20, mh * 1.1)), cMax = niceMax(Math.max(5, mc * 1.1));
+  ctx.strokeStyle = 'rgba(34,228,255,0.08)'; ctx.beginPath();
+  for (let i = 0; i <= 4; i++) { const y = py + ph * i / 4; ctx.moveTo(px, y); ctx.lineTo(px + pw, y); }
+  ctx.stroke();
+  ctx.fillStyle = '#22e4ff'; ctx.fillText(hMax, gx + 6, py + 8); ctx.fillText('0', gx + 6, py + ph);
+  ctx.fillStyle = '#ff2d55'; ctx.textAlign = 'right'; ctx.fillText(cMax, gx + gw - 6, py + 8); ctx.fillText('0', gx + gw - 6, py + ph); ctx.textAlign = 'left';
+  if (hist.length < 2) return;
+  const x0 = px + pw * (1 - (hist.length - 1) / (N - 1)), dx = pw / (N - 1);
+  // 식물 (식물 상한 기준 면적)
+  ctx.fillStyle = 'rgba(57,255,138,0.10)'; ctx.beginPath(); ctx.moveTo(x0, py + ph);
+  hist.forEach((d, i) => ctx.lineTo(x0 + i * dx, py + ph - ph * Math.min(1, d.p / w.cfg.plantMaxCap)));
+  ctx.lineTo(x0 + (hist.length - 1) * dx, py + ph); ctx.fill();
+  // 초식 / 육식 파동 곡선
+  const line = (key, max, col) => {
+    ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.shadowColor = col; ctx.shadowBlur = 6; ctx.beginPath();
+    hist.forEach((d, i) => { const y = py + ph - ph * Math.min(1, d[key] / max); i ? ctx.lineTo(x0 + i * dx, y) : ctx.moveTo(x0, y); });
+    ctx.stroke(); ctx.shadowBlur = 0;
+  };
+  line('h', hMax, '#22e4ff'); line('c', cMax, '#ff2d55');
+}
+
+// 호가창 스파크라인 (최근 30회 시세)
+function drawSparks() {
+  const w = world || demo; if (!w) return;
+  const c = w.cfg;
+  sparkline($('sparkH'), w.market.herb.hist, '#22e4ff', c.herbivorePriceMin, c.herbivorePriceMax);
+  sparkline($('sparkC'), w.market.carn.hist, '#ff2d55', c.carnivorePriceMin, c.carnivorePriceMax);
+}
+function sparkline(cnv, hist, col, lo, hi) {
+  const g = cnv.getContext('2d'), W = cnv.width, Hh = cnv.height;
+  g.clearRect(0, 0, W, Hh);
+  const hotY = Hh - Hh * GAME_CONFIG.hotThreshold;
+  g.strokeStyle = 'rgba(255,45,85,0.3)'; g.setLineDash([3 * dpr, 3 * dpr]); g.beginPath(); g.moveTo(0, hotY); g.lineTo(W, hotY); g.stroke(); g.setLineDash([]);
+  if (hist.length < 2) return;
+  const dx = W / 29, x0 = W - (hist.length - 1) * dx;
+  g.strokeStyle = col; g.lineWidth = 1.5 * dpr; g.beginPath();
+  hist.forEach((v, i) => { const y = Hh - 2 - (Hh - 4) * clamp((v - lo) / (hi - lo || 1), 0, 1); i ? g.lineTo(x0 + i * dx, y) : g.moveTo(x0, y); });
+  g.stroke();
+}
+
+/* =====================================================================
+   [12] DOM 대시보드 갱신 (10Hz)
+   ===================================================================== */
+function updateUI() {
+  const w = world, c = w.cfg, m = w.market, F = envFactors(w);
+  const H = w.herbs.length, C = w.carns.length, playing = gameState === 'PLAYING';
+  // 헤더
+  $('hMoney').textContent = '💰 ' + fmt(w.money);
+  $('hGoalLbl').textContent = '목표 잔고 ' + fmt(c.targetMoney);
+  const gp = clamp(w.money / c.targetMoney, 0, 1);
+  $('hGoalBar').style.width = (gp * 100).toFixed(1) + '%'; $('hGoalPct').textContent = (gp * 100).toFixed(1) + '%';
+  $('hTime').textContent = mmss(w.t);
+  const up = $('hUpkeep');
+  if (w.arrears > 0) { up.textContent = `⚠ 체납! ${Math.ceil(c.arrearsGraceSec - w.arrears)}초 후 파산`; up.style.opacity = (Math.floor(performance.now() / 300) % 2) ? 1 : 0.4; }
+  else { up.textContent = `-$${c.labUpkeepPerSec}/s`; up.style.opacity = 1; }
+  $('hP').textContent = w.plants.length; $('hH').textContent = H; $('hC').textContent = C;
+  // 마켓
+  $('mTimer').textContent = m.timer.toFixed(1) + 's';
+  $('mBar').style.width = (clamp(m.timer / c.marketCycleSec, 0, 1) * 100) + '%';
+  const ev = $('mEvent'); ev.textContent = m.event; ev.className = 'event ' + m.eventKind;
+  for (const [kind, sfx, n] of [['herb', 'H', H], ['carn', 'C', C]]) {
+    const s = m[kind];
+    $('mPrice' + sfx).textContent = fmtP(kind, s.price);
+    const chg = s.prev ? (s.price - s.prev) / s.prev * 100 : 0, el = $('mChg' + sfx);
+    // 한국 증시 관례: 상승 빨강 ▲ / 하락 파랑 ▼
+    if (Math.abs(chg) < 0.5) { el.textContent = '— 0%'; el.style.color = 'var(--dim)'; }
+    else if (chg > 0) { el.textContent = `▲ +${chg.toFixed(0)}%`; el.style.color = '#ff5c7a'; }
+    else { el.textContent = `▼ ${chg.toFixed(0)}%`; el.style.color = '#6fa8ff'; }
+    $('card' + sfx).classList.toggle('hot', isHot(w, kind));
+    $('mHold' + sfx).textContent = n;
+    const est = p => n ? fmt(Math.min(n, Math.ceil(n * p)) * s.price - c.harvestFee) : '—';
+    $('mEst' + sfx + '30').textContent = est(0.3); $('mEst' + sfx + '50').textContent = est(0.5);
+  }
+  $('mRangeH').textContent = `범위 $${c.herbivorePriceMin}~$${c.herbivorePriceMax}`;
+  $('mRangeC').textContent = `범위 $${c.carnivorePriceMin}~$${c.carnivorePriceMax}`;
+  $('feeNote').textContent = `매도 1회당 고정 수수료 ${fmt(c.harvestFee)} · 최소 1마리 체결`;
+  document.querySelectorAll('.sell').forEach(b => { b.disabled = !playing || (b.dataset.kind === 'herb' ? H : C) === 0; });
+  // 유료 개입 버튼
+  $('bSpawnH').disabled = !playing || w.money < c.spawnHerbivoreCost; $('bSpawnHc').textContent = fmt(c.spawnHerbivoreCost); $('bSpawnHd').textContent = `${c.spawnHerbivoreCount}마리 · 중앙 투입`;
+  $('bSpawnC').disabled = !playing || w.money < c.spawnCarnivoreCost; $('bSpawnCc').textContent = fmt(c.spawnCarnivoreCost); $('bSpawnCd').textContent = `${c.spawnCarnivoreCount}마리 · 중앙 투입`;
+  $('bFeed').disabled = !playing || w.money < c.emergencyFeedCost; $('bFeedc').textContent = fmt(c.emergencyFeedCost); $('bFeedd').textContent = `식물 ${c.emergencyFeedCount}개 · [S]`;
+  // 환경 레버 수치
+  $('lvLightV').textContent = Math.round(w.env.light * 100) + '%';
+  $('lvTempV').textContent = Math.round(w.env.temp * 100) + '%';
+  $('lvNutV').textContent = Math.round(w.env.nutrient * 100) + '%';
+  $('lvLightD').textContent = `식물 ${F.plantRate.toFixed(1)}개/s`;
+  $('lvTempD').textContent = `실효 ${Math.round(F.effTemp * 100)}% · 대사×${F.metabMul.toFixed(2)}`;
+  $('lvNutD').textContent = `식물 ${F.plantEnergy.toFixed(0)} kcal/개`;
+}
+
+/* =====================================================================
+   [13] 메인 루프 — 고정 스텝 누적기 × 배속
+   ===================================================================== */
+function frame(ts) {
+  const rdt = Math.min(0.1, (ts - lastTs) / 1000); lastTs = ts;
+  if (gameState === 'PLAYING') {
+    // 배속: 실제 경과 시간 × speed 만큼 고정 스텝(1/60초)을 소화 → 이동·시세 타이머 모두 N배
+    acc += rdt * speed;
+    let n = 0;
+    while (acc >= FIXED_DT && n < 30) { stepWorld(world, FIXED_DT); acc -= FIXED_DT; n++; if (world.state !== 'playing') break; }
+    if (n >= 30) acc = 0;
+    processEvents(world);
+    if (world.state === 'over') enterState('GAME_OVER');
+    else if (world.state === 'clear') enterState('GAME_CLEAR');
+  } else if (gameState === 'START_MENU' && demo) {
+    // 메뉴 배경 데모: 적당히 개체를 보충하며 계속 굴림
+    stepWorld(demo, FIXED_DT);
+    if (demo.herbs.length < 8) for (let i = 0; i < 10; i++) addHerbAt(demo, demo.rng() * WORLD_W, demo.rng() * WORLD_H, 40);
+    if (demo.carns.length < 2) addCarnAt(demo, demo.rng() * WORLD_W, demo.rng() * WORLD_H, 100);
+    if (demo.carns.length > 30) demo.carns.length = 20;
+  }
+  const w = gameState === 'START_MENU' ? demo : world;
+  if (w) {
+    renderWorld(w, ts / 1000);
+    renderEffects(rdt);
+    if (gameState !== 'START_MENU') renderGraph(w);
+  }
+  uiTimer += rdt;
+  if (world && uiTimer > 0.1) { uiTimer = 0; updateUI(); }
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   [14] 밸런스 튜너 (인스펙터) — 실시간 수정 / 코드 복사 / 봇 시뮬레이션
+   ===================================================================== */
+const CFG_META = [
+  ['기본 · 경제', [['startMoney', '초기 자금', '재시작 시 적용'], ['targetMoney', '클리어 목표 자금'], ['labUpkeepPerSec', '연구소 유지비 $/s'], ['arrearsGraceSec', '체납 유예 (초)']]],
+  ['마켓', [['marketCycleSec', '시세 변동 주기 (초)'], ['herbivorePriceMin', '초식 단가 최소'], ['herbivorePriceMax', '초식 단가 최대'], ['carnivorePriceMin', '육식 단가 최소'], ['carnivorePriceMax', '육식 단가 최대'], ['hotThreshold', '고점 판정 (정규화 0~1)'], ['harvestFee', '매도 수수료']]],
+  ['유료 개입', [['spawnHerbivoreCost', '초식 스폰 비용'], ['spawnHerbivoreCount', '초식 스폰 수'], ['spawnCarnivoreCost', '육식 스폰 비용'], ['spawnCarnivoreCount', '육식 스폰 수'], ['emergencyFeedCost', '영양 살포 비용'], ['emergencyFeedCount', '영양 살포 식물 수']]],
+  ['환경', [['defaultLight', '일조량 기본값', '재시작 시 적용'], ['defaultTemp', '수온 기본값', '재시작 시 적용'], ['defaultNutrient', '영양 기본값', '재시작 시 적용'], ['lightHeatEffect', '일조량→수온 부작용']]],
+  ['식물', [['plantSpawnBaseRate', '초당 생성 (일조 50%)'], ['plantEnergyBase', '식물 에너지 (영양 50%)'], ['plantMaxCap', '식물 최대 개수']]],
+  ['초식 세포', [['herbivoreStartEnergy', '초기 에너지'], ['herbivoreReproduceThreshold', '분열 임계치'], ['herbivoreBaseSpeed', '기본 속도'], ['herbivoreBaseMetabolism', '기본 대사량 /s'], ['herbivoreSightRange', '먹이 탐색 반경'], ['herbivoreFleeRange', '도주 감지 반경'], ['herbivoreMateRange', '정족수(짝) 반경'], ['herbivoreReproCooldown', '분열 쿨다운']]],
+  ['육식 세포', [['carnivoreStartEnergy', '초기 에너지'], ['carnivoreReproduceThreshold', '분열 임계치'], ['carnivoreBaseSpeed', '기본 속도'], ['carnivoreBaseMetabolism', '기본 대사량 /s'], ['carnivoreSightRange', '사냥 탐색 반경'], ['carnivoreEnergyYield', '포식 시 에너지'], ['carnivoreMateRange', '정족수(짝) 반경'], ['carnivoreDigestTime', '소화 시간'], ['carnivoreReproCooldown', '분열 쿨다운'], ['carnivoreSpacing', '영역 간격 (분리 반경)']]],
+  ['시스템', [['maxHerbivores', '초식 최대 개체'], ['maxCarnivores', '육식 최대 개체']]]
+];
+function buildTuner() {
+  let html = '';
+  for (const [sec, rows] of CFG_META) {
+    html += `<div class="tsec">${sec}</div>`;
+    for (const [k, label, note] of rows) {
+      const d = DEFAULT_CONFIG[k], unit = d <= 1 && !Number.isInteger(d) ? 1 : 0;
+      const max = unit ? 1 : Math.max(1, d * 3), step = unit || d < 10 ? 0.05 : 1;
+      html += `<div class="trow"><label>${label}<small>${k}${note ? ' · ' + note : ''}</small></label>
+        <input type="range" data-k="${k}" min="0" max="${max}" step="${step}" value="${GAME_CONFIG[k]}">
+        <input type="number" data-k="${k}" step="${step}" value="${GAME_CONFIG[k]}"></div>`;
+    }
+  }
+  $('tFields').innerHTML = html;
+  $('tFields').querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+    const k = inp.dataset.k, v = parseFloat(inp.value);
+    if (!isFinite(v)) return;
+    GAME_CONFIG[k] = v;
+    $('tFields').querySelectorAll(`input[data-k="${k}"]`).forEach(o => { if (o !== inp) o.value = v; o.classList.toggle('changed', v !== DEFAULT_CONFIG[k]); });
+    if (k === 'hotThreshold') drawSparks();
+  }));
+}
+function toggleTuner() { $('tuner').classList.toggle('open'); }
+$('btnTuner').onclick = e => { toggleTuner(); e.currentTarget.blur(); };
+$('tClose').onclick = toggleTuner;
+$('tReset').onclick = () => { Object.assign(GAME_CONFIG, DEFAULT_CONFIG); buildTuner(); toast('기본값으로 복원했습니다', 'good'); };
+$('tRestart').onclick = () => { toggleTuner(); enterState('PLAYING'); };
+$('tCopy').onclick = () => {
+  const text = 'const GAME_CONFIG = ' + JSON.stringify(GAME_CONFIG, null, 2) + ';';
+  const fallback = () => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); };
+  (navigator.clipboard ? navigator.clipboard.writeText(text).catch(fallback) : Promise.resolve(fallback()))
+    .then(() => toast('📋 설정 코드를 클립보드에 복사했습니다', 'good'));
+};
+
+// 헤드리스 봇 시뮬레이션: 제너레이터를 25ms 단위로 쪼개 실행해 UI 프리징 방지
+let simRunning = false;
+$('tSim').onclick = () => {
+  if (simRunning) return;
+  simRunning = true; $('tSim').disabled = true;
+  const cfg = Object.assign({}, GAME_CONFIG), seeds = [0, 1, 2].map(() => (Math.random() * 1e6) | 0);
+  const jobs = []; for (const b of ['greedy', 'hoarder', 'eco']) for (const s of seeds) jobs.push([b, s]);
+  const results = [];
+  let ji = 0, gen = null;
+  const out = $('simOut');
+  const render = (prog) => {
+    let h = `<div class="simbar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
+      <table><tr><th>전략</th><th>결과</th><th>시간</th><th>최종/최고 잔고</th><th>육식 매도</th><th>목표</th></tr>`;
+    for (const r of results) {
+      const b = BOTS[r.bot];
+      h += `<tr><td>${b.label}<br><small style="color:var(--dim)">seed ${r.seed} · 최대 ▲${r.maxH} ◆${r.maxC} · 붕괴 ${r.crashes}회</small></td>
+        <td>${r.outcome}</td><td>${mmss(r.time)}</td><td>${fmt(r.money)}<br><small style="color:var(--dim)">${fmt(r.peakMoney)}</small></td>
+        <td>${r.soldC}</td><td class="${r.pass ? 'ok' : 'ng'}">${r.pass ? '✓' : '✗'} <small>${b.goal}</small></td></tr>`;
+    }
+    out.innerHTML = h + '</table>' + (prog >= 1 ? `<div style="margin-top:8px">완료: ${results.filter(r => r.pass).length}/${results.length} 목표 달성</div>` : `<div style="margin-top:8px;color:var(--dim)">시뮬레이션 중… (${ji + 1}/${jobs.length})</div>`);
+  };
+  const pump = () => {
+    const t0 = performance.now();
+    while (performance.now() - t0 < 25) {
+      if (!gen) gen = simulateBot(jobs[ji][0], cfg, jobs[ji][1], 1200);
+      const s = gen.next();
+      if (s.done) {
+        results.push(s.value); gen = null; ji++;
+        if (ji >= jobs.length) { render(1); simRunning = false; $('tSim').disabled = false; return; }
+      }
+    }
+    render((ji + 0.5) / jobs.length);
+    setTimeout(pump, 0);
+  };
+  render(0); pump();
+};
+
+/* =====================================================================
+   [15] 부팅
+   ===================================================================== */
+buildTuner();
+enterState('START_MENU');
+world = null;
+resize();
+requestAnimationFrame(ts => { lastTs = ts; frame(ts); });
+</script>
+</body>
+</html>
