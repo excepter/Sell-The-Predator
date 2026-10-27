@@ -75,22 +75,22 @@ header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
 #pauseTag{position:absolute;left:50%;top:12px;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--dim);pointer-events:none}
 
 /* ---------- 마켓 호가창 ---------- */
-#market{grid-row:2;grid-column:2;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+#market{grid-row:2;grid-column:2;padding:10px 12px;display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
 .row{display:flex;justify-content:space-between;align-items:center;gap:6px}
 .cycle .bar{height:6px;background:#0d2033;border-radius:3px;overflow:hidden;margin-top:6px}
 .cycle .bar i{display:block;height:100%;width:100%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
 .cycle .row span:last-child{font-weight:700;color:var(--cyan)}
 .event{margin-top:6px;font-size:11px;color:var(--dim);min-height:15px}
 .event.spike{color:var(--red);font-weight:700} .event.crash{color:#7fa3ff}
-.card{border:1px solid var(--line);border-radius:8px;padding:10px;background:#061019;position:relative;transition:border-color .2s}
+.card{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#061019;position:relative;transition:border-color .2s}
 .card .nm{font-weight:700}
 .card .hold{font-size:11px;color:var(--dim)} .card .hold b{color:var(--text)}
-.price{display:flex;align-items:baseline;justify-content:space-between;margin:6px 0 4px}
+.price{display:flex;align-items:baseline;justify-content:space-between;margin:2px 0 2px}
 .price>span:first-child{font-size:26px;font-weight:800;letter-spacing:.02em}
 .card.herb .price>span:first-child{color:var(--cyan);text-shadow:0 0 12px rgba(34,228,255,.35)}
 .card.carn .price>span:first-child{color:var(--red);text-shadow:0 0 12px rgba(255,45,85,.4)}
 .chg{font-weight:700;font-size:13px}
-.spark{width:100%;height:34px;display:block}
+.spark{width:100%;height:26px;display:block}
 .small{font-size:11px;color:var(--dim);margin-top:4px} .small b{color:var(--text)}
 .card.hot{animation:hot .8s infinite alternate;border-color:var(--red)}
 .card.hot::after{content:"HIGH";position:absolute;right:10px;top:-8px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;letter-spacing:.1em}
@@ -104,6 +104,18 @@ header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
 .sell.carn{background:rgba(255,45,85,.13);border-color:rgba(255,45,85,.55);color:#ffd3dc}
 .sell.carn:hover:not(:disabled){background:rgba(255,45,85,.25);box-shadow:0 0 14px rgba(255,45,85,.5)}
 .sell .neg{color:#ff8a9e}
+.storage{margin-top:10px;padding-top:8px;border-top:1px dashed #5a1a2c}
+.stlbl{font-size:11px;font-weight:800;letter-spacing:.08em;color:#9fe8ff}
+#stCount{font-size:13px;color:#cdefff}
+.stslots{display:flex;flex-wrap:wrap;gap:3px;margin:6px 0 2px}
+.stslots i{width:9px;height:9px;border-radius:2px;border:1px solid #23506a;background:#081521}
+.stslots i.on{background:#ff2d55;border-color:#ff8fa3;box-shadow:0 0 5px rgba(255,45,85,.7)}
+.stbtn{padding:7px 6px;border-radius:6px;font-weight:800;font-size:13px;border:1px solid rgba(120,220,255,.5);background:rgba(120,220,255,.08);color:#d4f4ff}
+.stbtn small{display:block;font-size:10px;font-weight:400;margin-top:2px;opacity:.85}
+.stbtn:hover:not(:disabled){background:rgba(120,220,255,.18)}
+.stbtn.sellst{border-color:rgba(255,209,102,.6);background:rgba(255,209,102,.1);color:#ffe9b8}
+.stbtn.sellst:hover:not(:disabled){background:rgba(255,209,102,.22)}
+.stfee{font-size:10px;color:var(--dim);margin-top:5px}
 .fee{font-size:10px;color:var(--dim);text-align:center}
 .log{font-size:11px;color:var(--dim);display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;min-height:60px}
 .log div b{color:var(--gold)}
@@ -251,6 +263,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
         <button class="sell carn" data-kind="carn" data-pct="0.3"></button>
         <button class="sell carn" data-kind="carn" data-pct="0.5"></button>
       </div>
+      <div class="storage">
+        <div class="row"><span class="stlbl" data-i18n="st.title"></span><b id="stCount">0 / 0</b></div>
+        <div class="stslots" id="stSlots"></div>
+        <div class="sellrow">
+          <button class="stbtn" id="bStore"></button>
+          <button class="stbtn sellst" id="bSellSt"></button>
+        </div>
+        <div class="stfee" id="stFee"></div>
+      </div>
     </div>
     <div class="fee" id="feeNote"></div>
     <div class="log" id="tradeLog"></div>
@@ -324,8 +345,8 @@ const GAME_CONFIG = {
 
   // 마켓 시세 및 판매
   marketCycleSec: 15,               // 시세 변동 주기 (초)
-  herbivorePriceMin: 5,
-  herbivorePriceMax: 15,
+  herbivorePriceMin: 4,
+  herbivorePriceMax: 11,
   carnivorePriceMin: 220,
   carnivorePriceMax: 820,
   hotThreshold: 0.7,                // 정규화 시세(0~1)가 이 값 이상이면 '고점' (호가창 점멸)
@@ -352,6 +373,12 @@ const GAME_CONFIG = {
   containerUpgradeCost: 800,        // Lv1→2 업그레이드 비용
   containerCostGrowth: 2.7,         // 레벨당 비용 배율   → 800, 2160, 5832, 15746, 42515
   overcrowdDeathRate: 0.6,          // 한도 초과 시 개체별 초당 사망 확률 = 계수 × 초과 비율
+  containerMinArea: 0.4,            // Lv1 배양조 면적 비율 (최대 레벨에서 1.0 = 화면 전체)
+
+  // 육식 보관함 — 생태계 밖에 보관 (먹지도·번식하지도·굶지도 않고 생물량에서 제외), 시세를 보고 매도
+  storageBaseSlots: 8,              // Lv1 보관 칸
+  storageSlotsPerLevel: 6,          // 레벨당 추가 칸 → 8, 14, 20, 26, 32, 38
+  storageFeePerSec: 1,              // 보관 육식 1마리당 초당 보관료
 
   // 환경 레버 기본값 (0.0 ~ 1.0)
   defaultLight: 0.5,
@@ -478,7 +505,7 @@ function biomass(w) { return w.herbs.length + w.carns.length * w.cfg.carnivoreBi
 // 연구소 유지비: 생물량에 초선형 비례 (사료·산소·폐기물 처리 비용이 규모에 따라 급증)
 function upkeepRate(w) {
   const c = w.cfg;
-  return c.labUpkeepBase + c.labUpkeepBiomassRate * Math.pow(biomass(w), c.labUpkeepBiomassExp);
+  return c.labUpkeepBase + c.labUpkeepBiomassRate * Math.pow(biomass(w), c.labUpkeepBiomassExp) + w.stored * c.storageFeePerSec;
 }
 // 환경 레버 → 실제 생태 계수
 function envFactors(w) {
@@ -502,10 +529,19 @@ function makeAgent(w, x, y, e) {
 // 컨테이너 공식: 한도 = 기본 × 성장^(Lv-1), 식물 배율 = 1 + 보너스 × (Lv-1), 비용 = 기본 × 성장^(Lv-1)
 function containerCap(w, lv = w.level) { return Math.round(w.cfg.containerBaseCap * Math.pow(w.cfg.containerCapGrowth, lv - 1)); }
 function plantMul(w, lv = w.level) { return 1 + w.cfg.containerPlantBonus * (lv - 1); }
+// 배양조 실제 경계: 면적 = 최소 비율 → 1.0 (레벨에 선형 비례), 화면 중앙 정렬
+function tankBounds(c, lv) {
+  const f = c.containerMinArea + (1 - c.containerMinArea) * (lv - 1) / Math.max(1, c.containerMaxLevel - 1);
+  const k = Math.sqrt(Math.min(1, f)), bw = WORLD_W * k, bh = WORLD_H * k;
+  return { x0: (WORLD_W - bw) / 2, y0: (WORLD_H - bh) / 2, x1: (WORLD_W + bw) / 2, y1: (WORLD_H + bh) / 2 };
+}
+// 보관 칸 = 기본 + 레벨당 추가 × (Lv-1)
+function storageCap(w) { return w.cfg.storageBaseSlots + w.cfg.storageSlotsPerLevel * (w.level - 1); }
 function upgradeCost(w) { return w.level >= w.cfg.containerMaxLevel ? null : Math.round(w.cfg.containerUpgradeCost * Math.pow(w.cfg.containerCostGrowth, w.level - 1)); }
 function addPlant(w, energy) {
   if (w.plants.length >= w.cfg.plantMaxCap * plantMul(w)) return false;
-  w.plants.push({ x: 20 + w.rng() * (WORLD_W - 40), y: 20 + w.rng() * (WORLD_H - 40), e: energy, dead: false, bt: w.t });
+  const b = w.bounds;
+  w.plants.push({ x: b.x0 + 15 + w.rng() * (b.x1 - b.x0 - 30), y: b.y0 + 15 + w.rng() * (b.y1 - b.y0 - 30), e: energy, dead: false, bt: w.t });
   return true;
 }
 function addHerbAt(w, x, y, e) { const h = makeAgent(w, x, y, e); w.herbs.push(h); return h; }
@@ -526,9 +562,10 @@ function createWorld(cfg, opts = {}) {
       starvedH: 0, starvedC: 0, eaten: 0, peakMoney: cfg.startMoney, herbExt: 0, carnExt: 0,
       maxH: 0, maxC: 0, crashes: 0, hPeak: 0, crowded: 0 },
     events: [], state: 'playing', endTime: 0, endReason: '', arrears: 0, marketTick: false, prevH: 0, prevC: 0,
-    level: 1, crowdWarned: false
+    level: 1, crowdWarned: false, stored: 0, bounds: null
   };
   w.market = createMarket(w);
+  w.bounds = tankBounds(cfg, 1);
   const F = envFactors(w);
   // 초기 생태계: 식물 20, 초식 10, 육식 0 (명세 5장)
   for (let i = 0; i < 20; i++) addPlant(w, F.plantEnergy);
@@ -545,16 +582,16 @@ function emit(w, ev) { if (!w.headless) w.events.push(ev); }
    ===================================================================== */
 const _nb = [];
 // 벽 회피: 가장자리 margin 이내면 안쪽으로 밀어내는 희망 속도 (gain = 반발 강도)
-function wallSteer(a, sp, out, m = 40, gain = 1.5) {
-  if (a.x < m) out.x += (m - a.x) / m * sp * gain; else if (a.x > WORLD_W - m) out.x -= (a.x - (WORLD_W - m)) / m * sp * gain;
-  if (a.y < m) out.y += (m - a.y) / m * sp * gain; else if (a.y > WORLD_H - m) out.y -= (a.y - (WORLD_H - m)) / m * sp * gain;
+function wallSteer(a, sp, out, bd, m = 40, gain = 1.5) {
+  if (a.x < bd.x0 + m) out.x += (bd.x0 + m - a.x) / m * sp * gain; else if (a.x > bd.x1 - m) out.x -= (a.x - (bd.x1 - m)) / m * sp * gain;
+  if (a.y < bd.y0 + m) out.y += (bd.y0 + m - a.y) / m * sp * gain; else if (a.y > bd.y1 - m) out.y -= (a.y - (bd.y1 - m)) / m * sp * gain;
 }
 // 벽 근처에서는 배회 방향(wa) 자체를 안쪽으로 회전시킴
 // (배회 의지와 벽 반발력이 정면으로 상쇄되면 속도가 0 근처가 되어 방향을 못 정하고 떨리는 현상 방지)
-function turnFromWall(a, m, dt) {
+function turnFromWall(a, bd, m, dt) {
   let nx = 0, ny = 0;
-  if (a.x < m) nx = 1; else if (a.x > WORLD_W - m) nx = -1;
-  if (a.y < m) ny = 1; else if (a.y > WORLD_H - m) ny = -1;
+  if (a.x < bd.x0 + m) nx = 1; else if (a.x > bd.x1 - m) nx = -1;
+  if (a.y < bd.y0 + m) ny = 1; else if (a.y > bd.y1 - m) ny = -1;
   if (!nx && !ny) return;
   if (Math.cos(a.wa) * nx + Math.sin(a.wa) * ny > 0.3) return;   // 이미 안쪽을 향하고 있음
   let d = Math.atan2(ny, nx) - a.wa;
@@ -562,15 +599,15 @@ function turnFromWall(a, m, dt) {
   a.wa += clamp(d, -5 * dt, 5 * dt);                               // 초당 최대 5rad 회전
 }
 // 희망 속도(dv)로 부드럽게 조향 후 이동 적분
-function integrate(a, dvx, dvy, lim, dt) {
+function integrate(a, dvx, dvy, lim, dt, bd) {
   const k = Math.min(1, 5 * dt);                // 조향 민감도 (관성)
   a.vx += (dvx - a.vx) * k; a.vy += (dvy - a.vy) * k;
   const sp = Math.hypot(a.vx, a.vy);
   if (sp > lim) { a.vx *= lim / sp; a.vy *= lim / sp; }
   a.x += a.vx * dt; a.y += a.vy * dt;
   // 벽에 닿으면 속도와 배회 방향을 함께 반사
-  if (a.x < 3) { a.x = 3; a.vx = Math.abs(a.vx); a.wa = Math.PI - a.wa; } else if (a.x > WORLD_W - 3) { a.x = WORLD_W - 3; a.vx = -Math.abs(a.vx); a.wa = Math.PI - a.wa; }
-  if (a.y < 3) { a.y = 3; a.vy = Math.abs(a.vy); a.wa = -a.wa; } else if (a.y > WORLD_H - 3) { a.y = WORLD_H - 3; a.vy = -Math.abs(a.vy); a.wa = -a.wa; }
+  if (a.x < bd.x0 + 3) { a.x = bd.x0 + 3; a.vx = Math.abs(a.vx); a.wa = Math.PI - a.wa; } else if (a.x > bd.x1 - 3) { a.x = bd.x1 - 3; a.vx = -Math.abs(a.vx); a.wa = Math.PI - a.wa; }
+  if (a.y < bd.y0 + 3) { a.y = bd.y0 + 3; a.vy = Math.abs(a.vy); a.wa = -a.wa; } else if (a.y > bd.y1 - 3) { a.y = bd.y1 - 3; a.vy = -Math.abs(a.vy); a.wa = -a.wa; }
   // 렌더링용 기수 방향: 충분히 움직일 때만 속도 방향으로 부드럽게 따라감 (저속 시 회전 떨림 방지)
   if (sp > 4) {
     let d = Math.atan2(a.vy, a.vx) - a.hd;
@@ -623,13 +660,13 @@ function stepHerbivores(w, F, dt) {
       } else {
         // 배회: 방향을 천천히 무작위로 틀며 탐색
         h.wa += (rng() - 0.5) * 5 * dt;
-        turnFromWall(h, 50, dt);
+        turnFromWall(h, w.bounds, 50, dt);
         _dv.x += Math.cos(h.wa) * sp * 0.75; _dv.y += Math.sin(h.wa) * sp * 0.75;
       }
     }
     boids(h, w.herbGrid, 36, 12, sp, 0.25, food ? 0.1 : 0.3, _dv);
-    wallSteer(h, sp, _dv);
-    integrate(h, _dv.x, _dv.y, lim, dt);
+    wallSteer(h, sp, _dv, w.bounds);
+    integrate(h, _dv.x, _dv.y, lim, dt, w.bounds);
 
     // 섭취 판정
     if (food && !food.dead) {
@@ -673,7 +710,7 @@ function stepCarnivores(w, F, dt) {
     } else {
       // 소화 중이거나 먹잇감 없음 → 독립 배회 (영역 사냥꾼)
       k.wa += (rng() - 0.5) * 4 * dt;
-      turnFromWall(k, 70, dt);
+      turnFromWall(k, w.bounds, 70, dt);
       const slow = k.dg > 0 ? 0.45 : 0.8;
       _dv.x += Math.cos(k.wa) * sp * slow; _dv.y += Math.sin(k.wa) * sp * slow;
       // 짝 찾기: 번식 반경 안에 동족이 하나도 없을 때만 가장 가까운 동족 쪽으로 이동
@@ -686,8 +723,8 @@ function stepCarnivores(w, F, dt) {
     // 영역성: 정렬·응집 없이 분리만 넓게 적용 → 육식끼리 서로 거리를 두고 퍼짐
     boids(k, w.carnGrid, c.carnivoreSpacing, c.carnivoreSpacing, sp * 0.7, 0, 0, _dv);
     // 추격 중에는 벽 반발을 약하게 (벽에 붙은 먹잇감 앞에서 멈칫거리지 않도록)
-    wallSteer(k, sp, _dv, prey ? 25 : 60, prey ? 0.6 : 1.6);
-    integrate(k, _dv.x, _dv.y, lim, dt);
+    wallSteer(k, sp, _dv, w.bounds, prey ? 25 : 60, prey ? 0.6 : 1.6);
+    integrate(k, _dv.x, _dv.y, lim, dt, w.bounds);
 
     // 포식 판정: 접촉 시 초식 즉사, 고정 에너지 획득
     if (prey && !prey.dead) {
@@ -788,7 +825,7 @@ function checkEnd(w) {
   if (w.state !== 'playing') return;
   if (w.money > w.stats.peakMoney) w.stats.peakMoney = w.money;
   if (w.money >= w.cfg.targetMoney) { w.state = 'clear'; w.endTime = w.t; }
-  else if (w.herbs.length + w.carns.length === 0 && w.money < w.cfg.spawnHerbivoreCost) { w.state = 'over'; w.endTime = w.t; w.endReason = 'extinct'; }
+  else if (w.herbs.length + w.carns.length === 0 && w.stored === 0 && w.money < w.cfg.spawnHerbivoreCost) { w.state = 'over'; w.endTime = w.t; w.endReason = 'extinct'; }
   else if (w.arrears >= w.cfg.arrearsGraceSec) { w.state = 'over'; w.endTime = w.t; w.endReason = 'arrears'; }
 }
 
@@ -850,12 +887,7 @@ function sellSpecies(w, kind, pct) {
   if (n === 0) return null;
   const count = Math.min(n, Math.ceil(n * pct));          // N% 올림 (최소 1마리)
   const price = w.market[kind].price;
-  // 부분 Fisher-Yates로 무작위 표본 추출
-  const idx = list.map((_, i) => i);
-  for (let i = 0; i < count; i++) { const j = i + ((w.rng() * (n - i)) | 0); const t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
-  const sold = [];
-  for (let i = 0; i < count; i++) { const o = list[idx[i]]; o.dead = true; sold.push({ x: o.x, y: o.y }); }
-  if (kind === 'herb') w.herbs = list.filter(o => !o.dead); else w.carns = list.filter(o => !o.dead);
+  const sold = removeRandom(w, kind, count);
   // 정산: 잔고 += 매도 수 × 현재 단가 − 고정 수수료
   const gross = count * price, fee = w.cfg.harvestFee;
   w.money = Math.max(0, w.money + gross - fee);
@@ -863,6 +895,39 @@ function sellSpecies(w, kind, pct) {
   if (kind === 'herb') w.stats.soldH += count; else w.stats.soldC += count;
   emit(w, { type: 'sell', kind, sold, price, gross, fee, count });
   populationWatch(w);
+  checkEnd(w);
+  return { count, price, gross, fee };
+}
+// 부분 Fisher-Yates로 count마리를 무작위로 꺼내 제거하고 위치 목록 반환
+function removeRandom(w, kind, count) {
+  const list = kind === 'herb' ? w.herbs : w.carns, n = list.length;
+  const idx = list.map((_, i) => i);
+  for (let i = 0; i < count; i++) { const j = i + ((w.rng() * (n - i)) | 0); const t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
+  const out = [];
+  for (let i = 0; i < count; i++) { const o = list[idx[i]]; o.dead = true; out.push({ x: o.x, y: o.y }); }
+  if (kind === 'herb') w.herbs = list.filter(o => !o.dead); else w.carns = list.filter(o => !o.dead);
+  return out;
+}
+// 보관: 배양조 육식의 N%(올림, 남은 칸 한도)를 보관함으로 이동
+function storeCarnivores(w, pct) {
+  if (w.state !== 'playing') return null;
+  const n = w.carns.length, space = storageCap(w) - w.stored;
+  if (!n || space <= 0) return null;
+  const count = Math.min(space, n, Math.ceil(n * pct));
+  const moved = removeRandom(w, 'carn', count);
+  w.stored += count;
+  emit(w, { type: 'store', moved, count });
+  populationWatch(w);
+  return count;
+}
+// 보관분 전량 매도: 매도 수 × 현재 육식 단가 − 고정 수수료
+function sellStored(w) {
+  if (w.state !== 'playing' || !w.stored) return null;
+  const count = w.stored, price = w.market.carn.price, gross = count * price, fee = w.cfg.harvestFee;
+  w.stored = 0;
+  w.money = Math.max(0, w.money + gross - fee);
+  w.stats.revenue += gross; w.stats.fees += fee; w.stats.soldC += count;
+  emit(w, { type: 'sell', kind: 'carn', sold: [], stored: true, price, gross, fee, count });
   checkEnd(w);
   return { count, price, gross, fee };
 }
@@ -882,6 +947,7 @@ function upgradeContainer(w) {
   const cost = upgradeCost(w);
   if (w.state !== 'playing' || cost == null || w.money < cost) return false;
   w.money -= cost; w.stats.spent += cost; w.level++;
+  w.bounds = tankBounds(w.cfg, w.level);
   emit(w, { type: 'upgrade', level: w.level, cap: containerCap(w) });
   return true;
 }
@@ -921,20 +987,22 @@ const BOTS = {
       const cost = upgradeCost(w), B = biomass(w), cap = containerCap(w);
       if (cost != null && B > cap * 0.7 && C >= 4 && w.money >= cost * 1.2 + 300) upgradeContainer(w);
       // 과밀 방지: 한도 90% 이상이면 더 많이 차지한 쪽을 정리
-      if (B > cap * 0.9) { if (H > C * c.carnivoreBiomass) sellSpecies(w, 'herb', 0.3); else ecoSell(w, 'carn', 6); }
+      if (B > cap * 0.9) { if (H > C * c.carnivoreBiomass) sellSpecies(w, 'herb', 0.3); else { ecoStore(w, 6); if (biomass(w) > cap * 0.9) ecoSell(w, 'carn', 6); } }
       // 개입: 멸종 위기 시에만 지출
       if (H < 6 && w.money >= c.spawnHerbivoreCost + 20) spawnHerbivores(w);
       if (C < 2 && H >= 40 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
-      // 육식 과밀(초식 대비)일 때 시세와 무관하게 잉여분 정리 → 붕괴 방지
-      if (C > 8 && ratio < 2.2) ecoSell(w, 'carn', 6);
+      // 육식 과밀(초식 대비)일 때 잉여분을 보관함으로(꽉 차면 매도) → 붕괴 방지
+      if (C > 8 && ratio < 2.2) { ecoStore(w, 6); if (w.carns.length > 8) ecoSell(w, 'carn', 6); }
       if (H > 220) sellSpecies(w, 'herb', 0.3);
-      // 현금 부족: 초식을 팔아 유지비 충당 (체납 파산 방지)
+      // 현금 부족: 보관분 → 초식 순으로 팔아 유지비 충당 (체납 파산 방지)
+      if (w.money < 250 && w.stored) sellStored(w);
       if (w.money < 250 && H > 25) sellSpecies(w, 'herb', 0.3);
     },
     market(w) {
       const C = w.carns.length;
-      // 육식 고점: 최소 번식 종자를 남기고 잉여분만 매도
-      if (w.market.carn.p >= 0.6) ecoSell(w, 'carn', Math.max(4, Math.round(C * 0.25)));
+      // 육식 고점: 보관분 전량 + 배양조 잉여분 매도 (고점이 아닐 때는 넘치는 개체만 보관 — tick에서 처리)
+      const keep = Math.max(4, Math.round(C * 0.25));
+      if (isHot(w, 'carn')) { sellStored(w); ecoSell(w, 'carn', keep); }
       if (isHot(w, 'herb') && w.herbs.length > 120) sellSpecies(w, 'herb', 0.3);
       // 번식 쌍이 없으면 초식을 팔아 육식 재투입 자금 마련
       if (C < 2 && w.herbs.length > 35) sellSpecies(w, 'herb', 0.3);
@@ -942,6 +1010,13 @@ const BOTS = {
     pass(r) { return r.outcome === 'CLEAR' && r.time <= 1200; }
   }
 };
+// 남길 종자 수(keep)를 지키는 선에서 보관(30%) 버튼을 반복 클릭
+function ecoStore(w, keep) {
+  for (let guard = 0; guard < 6; guard++) {
+    const n = w.carns.length;
+    if (n < 4 || n - Math.ceil(n * 0.3) < keep || !storeCarnivores(w, 0.3)) break;
+  }
+}
 // 남길 종자 수(keep)를 지키는 선에서 50% / 30% 버튼을 반복 클릭
 function ecoSell(w, kind, keep) {
   for (let guard = 0; guard < 6; guard++) {
@@ -1014,21 +1089,21 @@ const I18N = {
     // 유료 개입
     'iv.title': 'INTERVENE', 'iv.herb': '▲ Add Grazers', 'iv.carn': '◆ Add Predators', 'iv.feed': '● Feed Boost',
     'iv.cells': '{n} cells · center', 'iv.plants': '{n} plants · [S]',
-    'keys': '<kbd>1</kbd> sell 30% grazers · <kbd>2</kbd> sell 30% predators · <kbd>U</kbd> upgrade container · <kbd>S</kbd> feed boost · <kbd>+</kbd><kbd>-</kbd> speed',
+    'keys': '<kbd>1</kbd> sell 30% grazers · <kbd>2</kbd> sell 30% predators · <kbd>3</kbd> store predators · <kbd>4</kbd> sell stored · <kbd>U</kbd> upgrade container · <kbd>S</kbd> feed boost · <kbd>+</kbd><kbd>-</kbd> speed',
     // 그래프
     'gr.title': 'LOTKA–VOLTERRA · LAST 2 MIN',
     // 헤더 툴팁
     'tip.money': '<b>Your cash.</b> Sales add money; upkeep and paid actions take it away.<br>If it stays at $0 for {s}s, you go bankrupt.<div class="dim">Peak {peak} · total sales {rev}</div>',
     'tip.goal': '<b>Reach {v} to win.</b><br>{p}% done · {left} to go.',
     'tip.time': '<b>Game time.</b> 2× / 4× speed makes everything run faster.<br>Prices change every {s}s.',
-    'tip.upkeep': '<b>Lab upkeep</b> rises faster than your population grows.<div class="f">upkeep = base + rate × biomass<sup>exp</sup><br>biomass = grazers + predators × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> = <b>{u}/s</b></div><div class="dim">Biomass 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>Sell extra cells to keep costs down.</div>',
+    'tip.upkeep': '<b>Lab upkeep</b> rises faster than your population grows.<div class="f">upkeep = base + rate × biomass<sup>exp</sup> + stored × fee<br>biomass = grazers + predators × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> + {st} × {sf} = <b>{u}/s</b></div><div class="dim">Biomass 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>Sell extra cells to keep costs down.</div>',
     'tip.pop': '<b class="g">● Plants</b>: food for grazers. Bigger containers grow more.<br><b class="c">▲ Grazers</b>: eat plants. Sell for {hp}.<br><b class="r">◆ Predators</b>: hunt grazers. Sell for {cp}.<div class="dim">Cells split only when a mate is nearby. Biomass now: {B}</div>',
     'tip.speed': '<b>Game speed.</b> Keys: <b>+</b> / <b>-</b>',
     // 초반 가이드
     'g.title': 'GUIDE', 'g.skip': 'Skip guide',
     'g.carn': 'Grazers <b>▲</b> eat plants and split. Wait for <b>{h} / {n}</b> grazers, then click <b>◆ Add Predators</b> ({v}). Too early and they starve.',
     'g.box': 'Watch the <b>capacity bar</b>. Past the limit, cells start dying. <b>⬆ Upgrade the container</b> ({v}) to hold more and grow more plants. (Key <b>U</b>)',
-    'g.sell': 'Predators: <b>{c} / {n}</b>. Let them grow to about {n}, then sell some at a good price (a <b>red flashing card</b> is best). Keep about <b>4</b> alive so they can breed. Low on cash? Sell some <b>▲ grazers</b>.',
+    'g.sell': 'Predators: <b>{c} / {n}</b>. Once there are about {n}, deal with the extras. Price low? <b>🧊 Store</b> them. Price high (<b>card flashes red</b>)? Sell. Keep about <b>4</b> in the tank to breed. Low on cash? Sell <b>▲ grazers</b>.',
     'g.end': 'Good! Sell extra cells, keep 4+ predators, and upgrade when the tank fills up.',
     // 토스트
     'to.start': '🧫 Culture started. Add predators once grazers multiply.',
@@ -1037,10 +1112,13 @@ const I18N = {
     'to.herbExt': '☠ Grazers extinct: the food chain is broken', 'to.carnExt': '☠ Predators extinct: your main income is gone',
     'to.carnLone': '⚠ 1 predator left: no mate, so it cannot split', 'to.herbLone': '⚠ 1 grazer left: no mate, so it cannot split',
     'to.spike': '📈 Predator price spike: {p}. Time to sell?',
-    'to.crowd': '⚠ Overcrowded! Cells are dying. Sell some or upgrade the container.',
+    'to.crowd': '⚠ Overcrowded! Cells are dying. Sell or store some, or upgrade the container.',
+    'to.storeFull': '🧊 Storage is full. Sell stored predators or upgrade the container.',
+    'st.title': '🧊 PREDATOR STORAGE', 'st.store': '🧊 Store {k}<small>30% of tank · [3]</small>', 'st.sell': '◆ Sell stored {n}<small>{v} · [4]</small>',
+    'st.fee': 'Fee {f}/s each (now {tot}/s) · no eating, breeding or biomass',
     'to.upgrade': '⬆ Container upgraded to Lv {l}. New limit: {cap}',
     'ct.title': 'CONTAINER', 'ct.cap': 'Biomass / limit', 'ct.upgrade': '⬆ Upgrade [U]',
-    'ct.next': 'Limit {a} → {b} · plants ×{m}', 'ct.max': 'Fully upgraded',
+    'ct.next': 'Limit {a}→{b} · plants ×{m} · 🧊+{s}', 'ct.max': 'Fully upgraded',
     'ct.plants': 'Plants {r}/s (×{m})', 'ct.ok': '{p}% full', 'ct.over': '⚠ OVER +{p}% · cells dying',
     'ct.note': 'Biomass = grazers + predators × {cb}. Over the limit, random cells die each second.',
     'end.level': 'Container', 'end.crowd': 'Crowding deaths',
@@ -1067,7 +1145,8 @@ const I18N = {
     'cfg.spawnCarnivoreCount': 'Add predators: count', 'cfg.emergencyFeedCost': 'Feed boost: cost', 'cfg.emergencyFeedCount': 'Feed boost: plants',
     'cfg.containerMaxLevel': 'Max level', 'cfg.containerBaseCap': 'Lv1 biomass limit', 'cfg.containerCapGrowth': 'Limit × per level',
     'cfg.containerPlantBonus': 'Plants + per level', 'cfg.containerUpgradeCost': 'First upgrade cost', 'cfg.containerCostGrowth': 'Cost × per level',
-    'cfg.overcrowdDeathRate': 'Crowding death rate',
+    'cfg.overcrowdDeathRate': 'Crowding death rate', 'cfg.containerMinArea': 'Lv1 tank area (0–1)',
+    'cfg.storageBaseSlots': 'Storage slots (Lv1)', 'cfg.storageSlotsPerLevel': 'Storage slots + per level', 'cfg.storageFeePerSec': 'Storage fee $/s each',
     'cfg.defaultLight': 'Light', 'cfg.defaultTemp': 'Heat', 'cfg.defaultNutrient': 'Nutrients', 'cfg.lightHeatEffect': 'Light warms water by',
     'cfg.plantSpawnBaseRate': 'Plants/s (at 50% light)', 'cfg.plantEnergyBase': 'Plant energy (at 50%)', 'cfg.plantMaxCap': 'Max plants',
     'cfg.herbivoreStartEnergy': 'Starting energy', 'cfg.herbivoreReproduceThreshold': 'Energy to split', 'cfg.herbivoreBaseSpeed': 'Base speed',
@@ -1103,18 +1182,18 @@ const I18N = {
     'ev.open': '시장 개장', 'ev.spike': '📈 육식 세포 수요 급등! 연구 기관 대량 매입', 'ev.crash': '📉 육식 세포 시세 폭락: 공급 과잉', 'ev.normal': '시세 갱신: 정상 거래', 'ev.up': '↗ 육식 시세 상승세', 'ev.down': '↘ 육식 시세 하락세',
     'iv.title': '직접 개입', 'iv.herb': '▲ 초식 스폰', 'iv.carn': '◆ 육식 스폰', 'iv.feed': '● 영양 살포',
     'iv.cells': '{n}마리 · 중앙 투입', 'iv.plants': '식물 {n}개 · [S]',
-    'keys': '<kbd>1</kbd> 초식 30% 매도 · <kbd>2</kbd> 육식 30% 매도 · <kbd>U</kbd> 컨테이너 업그레이드 · <kbd>S</kbd> 영양 살포 · <kbd>+</kbd><kbd>-</kbd> 배속',
+    'keys': '<kbd>1</kbd> 초식 30% 매도 · <kbd>2</kbd> 육식 30% 매도 · <kbd>3</kbd> 육식 보관 · <kbd>4</kbd> 보관분 매도 · <kbd>U</kbd> 컨테이너 업그레이드 · <kbd>S</kbd> 영양 살포 · <kbd>+</kbd><kbd>-</kbd> 배속',
     'gr.title': 'LOTKA–VOLTERRA MONITOR · 최근 2분',
     'tip.money': '<b>보유 현금.</b> 매도하면 늘고, 유지비와 유료 개입으로 줄어듭니다.<br>잔고 $0이 {s}초 이어지면 파산합니다.<div class="dim">최고 {peak} · 총 매출 {rev}</div>',
     'tip.goal': '<b>잔고 {v}에 도달하면 클리어.</b><br>{p}% 달성 · {left} 남음.',
     'tip.time': '<b>게임 시간.</b> 2× / 4× 배속이면 모든 것이 빨라집니다.<br>시세는 {s}초마다 바뀝니다.',
-    'tip.upkeep': '<b>연구소 유지비</b>는 개체 수보다 더 빠르게 늘어납니다.<div class="f">유지비 = 기본 + 계수 × 생물량<sup>지수</sup><br>생물량 = 초식 수 + 육식 수 × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> = <b>{u}/s</b></div><div class="dim">생물량 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>남는 개체를 팔아 비용을 줄이세요.</div>',
+    'tip.upkeep': '<b>연구소 유지비</b>는 개체 수보다 더 빠르게 늘어납니다.<div class="f">유지비 = 기본 + 계수 × 생물량<sup>지수</sup> + 보관 수 × 보관료<br>생물량 = 초식 수 + 육식 수 × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> + {st} × {sf} = <b>{u}/s</b></div><div class="dim">생물량 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>남는 개체를 팔아 비용을 줄이세요.</div>',
     'tip.pop': '<b class="g">● 식물</b>: 초식의 먹이. 컨테이너가 클수록 많이 자랍니다.<br><b class="c">▲ 초식</b>: 식물을 먹음. 판매가 {hp}.<br><b class="r">◆ 육식</b>: 초식을 사냥. 판매가 {cp}.<div class="dim">세포는 근처에 짝이 있어야 분열합니다. 현재 생물량: {B}</div>',
     'tip.speed': '<b>게임 배속.</b> 단축키: <b>+</b> / <b>-</b>',
     'g.title': '가이드', 'g.skip': '가이드 건너뛰기',
     'g.carn': '초식 <b>▲</b>은 식물을 먹고 분열합니다. 초식이 <b>{h} / {n}</b>마리가 되면 <b>◆ 육식 스폰</b>({v})을 누르세요. 너무 일찍 넣으면 굶어 죽습니다.',
     'g.box': '<b>수용량 막대</b>를 보세요. 한도를 넘으면 세포가 죽기 시작합니다. <b>⬆ 컨테이너 업그레이드</b>({v})로 한도와 식물 생산량을 늘리세요. (단축키 <b>U</b>)',
-    'g.sell': '육식: <b>{c} / {n}</b>. 약 {n}마리까지 늘린 뒤 적당한 시세에 일부를 파세요(<b>카드가 붉게 깜빡일 때</b>가 가장 좋음). 번식할 수 있게 <b>4마리 정도</b>는 남기세요. 현금이 부족하면 <b>▲ 초식</b>을 파세요.',
+    'g.sell': '육식: <b>{c} / {n}</b>. 약 {n}마리가 되면 남는 개체를 처리하세요. 시세가 낮으면 <b>🧊 보관</b>, 높으면(<b>카드가 붉게 깜빡임</b>) 매도. 번식용으로 배양조에 <b>4마리 정도</b>는 남기세요. 현금이 부족하면 <b>▲ 초식</b>을 파세요.',
     'g.end': '좋습니다! 남는 개체는 팔고, 육식은 4마리 이상 남기고, 컨테이너가 차면 업그레이드하세요.',
     'to.start': '🧫 배양 시작: 초식 세포가 늘어나면 육식 세포를 투입하세요',
     'to.noCells': '매도할 {name}가 없습니다', 'to.noMoney': '잔고가 부족합니다',
@@ -1122,10 +1201,13 @@ const I18N = {
     'to.herbExt': '☠ 초식 세포 멸종: 먹이사슬 붕괴', 'to.carnExt': '☠ 육식 세포 멸종: 주 수입원 중단',
     'to.carnLone': '⚠ 육식 1마리: 짝이 없어 분열 불가', 'to.herbLone': '⚠ 초식 1마리: 짝이 없어 분열 불가',
     'to.spike': '📈 육식 시세 급등 {p}: 매도 찬스',
-    'to.crowd': '⚠ 과밀! 세포가 죽고 있습니다. 일부를 팔거나 컨테이너를 업그레이드하세요.',
+    'to.crowd': '⚠ 과밀! 세포가 죽고 있습니다. 일부를 팔거나 보관하고, 컨테이너를 업그레이드하세요.',
+    'to.storeFull': '🧊 보관함이 가득 찼습니다. 보관분을 팔거나 컨테이너를 업그레이드하세요.',
+    'st.title': '🧊 육식 보관함', 'st.store': '🧊 {k}마리 보관<small>배양조의 30% · [3]</small>', 'st.sell': '◆ 보관분 {n}마리 매도<small>{v} · [4]</small>',
+    'st.fee': '마리당 보관료 {f}/s (현재 {tot}/s) · 먹이·번식·생물량 없음',
     'to.upgrade': '⬆ 컨테이너 Lv {l} 업그레이드 완료. 새 한도: {cap}',
     'ct.title': '컨테이너', 'ct.cap': '생물량 / 한도', 'ct.upgrade': '⬆ 업그레이드 [U]',
-    'ct.next': '한도 {a} → {b} · 식물 ×{m}', 'ct.max': '최대 레벨',
+    'ct.next': '한도 {a}→{b} · 식물 ×{m} · 🧊+{s}', 'ct.max': '최대 레벨',
     'ct.plants': '식물 {r}개/s (×{m})', 'ct.ok': '{p}% 사용', 'ct.over': '⚠ 초과 +{p}% · 세포 사망 중',
     'ct.note': '생물량 = 초식 + 육식 × {cb}. 한도를 넘으면 매초 무작위로 세포가 죽습니다.',
     'end.level': '컨테이너', 'end.crowd': '과밀 사망',
@@ -1151,7 +1233,8 @@ const I18N = {
     'cfg.spawnCarnivoreCount': '육식 스폰 수', 'cfg.emergencyFeedCost': '영양 살포 비용', 'cfg.emergencyFeedCount': '영양 살포 식물 수',
     'cfg.containerMaxLevel': '최대 레벨', 'cfg.containerBaseCap': 'Lv1 생물량 한도', 'cfg.containerCapGrowth': '레벨당 한도 배율',
     'cfg.containerPlantBonus': '레벨당 식물 보너스', 'cfg.containerUpgradeCost': '첫 업그레이드 비용', 'cfg.containerCostGrowth': '레벨당 비용 배율',
-    'cfg.overcrowdDeathRate': '과밀 사망 계수',
+    'cfg.overcrowdDeathRate': '과밀 사망 계수', 'cfg.containerMinArea': 'Lv1 배양조 면적 (0~1)',
+    'cfg.storageBaseSlots': '보관 칸 (Lv1)', 'cfg.storageSlotsPerLevel': '레벨당 보관 칸 추가', 'cfg.storageFeePerSec': '마리당 보관료 $/s',
     'cfg.defaultLight': '일조량', 'cfg.defaultTemp': '수온', 'cfg.defaultNutrient': '영양 염류', 'cfg.lightHeatEffect': '일조량→수온 부작용',
     'cfg.plantSpawnBaseRate': '초당 생성 (일조 50%)', 'cfg.plantEnergyBase': '식물 에너지 (영양 50%)', 'cfg.plantMaxCap': '식물 최대 개수',
     'cfg.herbivoreStartEnergy': '초기 에너지', 'cfg.herbivoreReproduceThreshold': '분열 임계치', 'cfg.herbivoreBaseSpeed': '기본 속도',
@@ -1200,6 +1283,7 @@ function enterState(s) {
   const ov = $('overlay');
   if (s === 'START_MENU') {
     demo = createWorld(GAME_CONFIG, { herbs: 40, carns: 4, headless: true }); demo.money = 1e12;
+    demo.level = GAME_CONFIG.containerMaxLevel; demo.bounds = tankBounds(GAME_CONFIG, demo.level);
     renderMenu();
   } else if (s === 'PLAYING') {
     world = createWorld(GAME_CONFIG);
@@ -1287,6 +1371,12 @@ function setSpeed(v) {
   speed = v;
   document.querySelectorAll('#speedBtns button').forEach(b => b.classList.toggle('on', +b.dataset.speed === v));
 }
+function doStore() {
+  if (gameState !== 'PLAYING') return;
+  if (storageCap(world) - world.stored <= 0) { toast(t('to.storeFull'), 'warn'); return; }
+  if (!storeCarnivores(world, 0.3)) toast(t('to.noCells', { name: t('sp.carns') }), 'warn');
+}
+function doSellStored() { if (gameState === 'PLAYING') sellStored(world); }
 function doUpgrade() {
   if (gameState !== 'PLAYING') return;
   if (upgradeCost(world) == null) return;
@@ -1298,6 +1388,8 @@ $('bSpawnH').onclick = e => { doSpawn('herb'); e.currentTarget.blur(); };
 $('bSpawnC').onclick = e => { doSpawn('carn'); e.currentTarget.blur(); };
 $('bFeed').onclick = e => { doSpawn('plant'); e.currentTarget.blur(); };
 $('bUpgrade').onclick = e => { doUpgrade(); e.currentTarget.blur(); };
+$('bStore').onclick = e => { doStore(); e.currentTarget.blur(); };
+$('bSellSt').onclick = e => { doSellStored(); e.currentTarget.blur(); };
 document.querySelectorAll('#speedBtns button').forEach(b => b.addEventListener('click', () => { setSpeed(+b.dataset.speed); b.blur(); }));
 
 // 키보드 단축키 (한글 IME 상태에서도 동작하도록 e.code 사용)
@@ -1313,6 +1405,8 @@ document.addEventListener('keydown', e => {
   switch (e.code) {
     case 'Digit1': case 'Numpad1': if (!e.repeat) doSell('herb', 0.3); break;
     case 'Digit2': case 'Numpad2': if (!e.repeat) doSell('carn', 0.3); break;
+    case 'Digit3': case 'Numpad3': if (!e.repeat) doStore(); break;
+    case 'Digit4': case 'Numpad4': if (!e.repeat) doSellStored(); break;
     case 'KeyU': if (!e.repeat) doUpgrade(); break;
     case 'KeyS': if (!e.repeat) doSpawn('plant'); break;
     case 'Equal': case 'NumpadAdd': setSpeed(order[Math.min(2, order.indexOf(speed) + 1)]); break;
@@ -1351,21 +1445,34 @@ function renderWorld(w, now) {
   view = { s, ox: (cw - WORLD_W * s) / 2, oy: (ch - WORLD_H * s) / 2 };
   ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * view.ox, dpr * view.oy);
 
-  // 배양조 바닥 + 측정 격자
-  ctx.fillStyle = '#050A10'; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
-  const amb = ctx.createRadialGradient(WORLD_W / 2, WORLD_H / 2, 50, WORLD_W / 2, WORLD_H / 2, WORLD_W * 0.7);
-  amb.addColorStop(0, 'rgba(20,60,90,0.18)'); amb.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = amb; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
-  ctx.strokeStyle = 'rgba(34,228,255,0.05)'; ctx.lineWidth = 1; ctx.beginPath();
+  // 잠긴 영역 (업그레이드 전): 어두운 빗금
+  ctx.fillStyle = '#03070b'; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+  ctx.strokeStyle = 'rgba(93,125,148,0.07)'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = -WORLD_H; x < WORLD_W; x += 26) { ctx.moveTo(x, 0); ctx.lineTo(x + WORLD_H, WORLD_H); }
+  ctx.stroke();
+  // 실제 배양조: 화면 경계(vb)가 목표 경계(w.bounds)로 부드럽게 확장
+  const tb = w.bounds;
+  if (!w._vb) w._vb = { ...tb };
+  const vb = w._vb;
+  for (const k of ['x0', 'y0', 'x1', 'y1']) vb[k] += (tb[k] - vb[k]) * 0.06;
+  const bw = vb.x1 - vb.x0, bh = vb.y1 - vb.y0;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(vb.x0, vb.y0, bw, bh); ctx.clip();
+  ctx.fillStyle = '#050A10'; ctx.fillRect(vb.x0, vb.y0, bw, bh);
+  const amb = ctx.createRadialGradient(WORLD_W / 2, WORLD_H / 2, 50, WORLD_W / 2, WORLD_H / 2, bw * 0.7);
+  amb.addColorStop(0, 'rgba(20,60,90,0.2)'); amb.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = amb; ctx.fillRect(vb.x0, vb.y0, bw, bh);
+  ctx.strokeStyle = 'rgba(34,228,255,0.05)'; ctx.beginPath();
   for (let x = 60; x < WORLD_W; x += 60) { ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); }
   for (let y = 60; y < WORLD_H; y += 60) { ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); }
   ctx.stroke();
+  ctx.restore();
   // 컨테이너 외곽: 레벨이 오를수록 두껍게, 과밀이면 붉게 맥동
   const crowded = biomass(w) > containerCap(w);
-  ctx.strokeStyle = crowded ? `rgba(255,45,85,${0.45 + 0.35 * Math.sin(now * 8)})` : 'rgba(34,228,255,0.25)';
-  ctx.lineWidth = 1 + w.level; ctx.strokeRect(w.level / 2, w.level / 2, WORLD_W - w.level, WORLD_H - w.level);
-  ctx.fillStyle = crowded ? 'rgba(255,90,110,0.85)' : 'rgba(93,125,148,0.6)'; ctx.font = '12px Consolas, monospace';
-  ctx.fillText(`CONTAINER Lv${w.level} // CAP ${containerCap(w)}`, 14, WORLD_H - 14);
+  ctx.strokeStyle = crowded ? `rgba(255,45,85,${0.45 + 0.35 * Math.sin(now * 8)})` : 'rgba(34,228,255,0.35)';
+  ctx.lineWidth = 1 + w.level; ctx.strokeRect(vb.x0, vb.y0, bw, bh);
+  ctx.fillStyle = crowded ? 'rgba(255,90,110,0.85)' : 'rgba(93,125,148,0.7)'; ctx.font = '12px Consolas, monospace';
+  ctx.fillText(`CONTAINER Lv${w.level} // CAP ${containerCap(w)}`, vb.x0 + 10, vb.y1 - 10);
 
   // 1) 발광 레이어 (가산 합성)
   ctx.globalCompositeOperation = 'lighter';
@@ -1428,9 +1535,11 @@ function processEvents(w) {
   for (const e of w.events) {
     switch (e.type) {
       case 'birth': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 2, r1: e.kind === 'carn' ? 22 : 12, life: 0.5, t: 0, col: e.kind === 'carn' ? '255,45,85' : '34,228,255' }); break;
+      case 'store':
+        e.moved.forEach(p => pushFx({ k: 'ring', x: p.x, y: p.y, r0: 14, r1: 2, life: 0.6, t: 0, col: '120,220,255' })); break;
       case 'death': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 8, r1: 1, life: 0.8, t: 0, col: e.kind === 'crowd' ? '255,140,60' : '120,140,155' }); break;
       case 'upgrade':
-        pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 20, r1: 600, life: 1.2, t: 0, col: '255,209,102' });
+        pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 20, r1: 500, life: 1.2, t: 0, col: '255,209,102' });
         toast(t('to.upgrade', { l: e.level, cap: e.cap }), 'good'); break;
       case 'kill': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 3, r1: 16, life: 0.35, t: 0, col: '255,120,140' }); break;
       case 'spawn': pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 10, r1: e.kind === 'plant' ? 400 : 90, life: 0.8, t: 0, col: e.kind === 'carn' ? '255,45,85' : e.kind === 'herb' ? '34,228,255' : '57,255,138' }); break;
@@ -1447,8 +1556,9 @@ function onSellFx(e) {
     if (i < 40) pushFx({ k: 'text', x: p.x, y: p.y, text: txt, col, big: e.kind === 'carn', life: 1.5, t: -i * 0.02 });
     pushFx({ k: 'ring', x: p.x, y: p.y, r0: 2, r1: 18, life: 0.5, t: 0, col: '255,209,102' });
   });
+  if (e.stored) pushFx({ k: 'text', x: WORLD_W / 2, y: WORLD_H / 2, text: `🧊 ${e.count} × ${txt}`, col, big: true, life: 2, t: 0 });
   const net = e.gross - e.fee;
-  tradeLog.unshift(t('mk.log', { time: mmss(world.t), sym: t(e.kind === 'herb' ? 'log.herb' : 'log.carn'), n: e.count, p: fmtP(e.kind, e.price), g: fmt(e.gross), f: fmt(e.fee) }));
+  tradeLog.unshift(t('mk.log', { time: mmss(world.t), sym: t(e.kind === 'herb' ? 'log.herb' : 'log.carn') + (e.stored ? '🧊' : ''), n: e.count, p: fmtP(e.kind, e.price), g: fmt(e.gross), f: fmt(e.fee) }));
   tradeLog.length = Math.min(tradeLog.length, 5); renderTradeLog();
   const m = $('hMoney'); m.classList.remove('flash-up'); void m.offsetWidth; m.classList.add('flash-up');
   if (e.kind === 'carn' && net >= 1000) toast(t('to.bigSale', { n: e.count, v: fmt(net) }), 'good');
@@ -1584,6 +1694,18 @@ function updateUI() {
     if (b._html !== html) { b.innerHTML = html; b._html = html; }
     b.disabled = !playing || n === 0;
   });
+  // 육식 보관함: 칸 표시, 보관(배양조 30%) / 보관분 전량 매도
+  const sCap = storageCap(w), space = sCap - w.stored, kStore = C ? Math.min(space, C, Math.ceil(C * 0.3)) : 0;
+  $('stCount').textContent = `${w.stored} / ${sCap}`;
+  const slots = Array.from({ length: sCap }, (_, i) => `<i class="${i < w.stored ? 'on' : ''}"></i>`).join('');
+  if ($('stSlots')._h !== slots) { $('stSlots').innerHTML = slots; $('stSlots')._h = slots; }
+  const stNet = w.stored * m.carn.price - c.harvestFee;
+  const hStore = t('st.store', { k: kStore }), hSell = t('st.sell', { n: w.stored, v: w.stored ? '+' + fmt(stNet) : '—' });
+  if ($('bStore')._h !== hStore) { $('bStore').innerHTML = hStore; $('bStore')._h = hStore; }
+  if ($('bSellSt')._h !== hSell) { $('bSellSt').innerHTML = hSell; $('bSellSt')._h = hSell; }
+  $('bStore').disabled = !playing || kStore === 0;
+  $('bSellSt').disabled = !playing || w.stored === 0;
+  $('stFee').textContent = t('st.fee', { f: fmt2(c.storageFeePerSec), tot: fmt2(w.stored * c.storageFeePerSec) });
   // 유료 개입 버튼
   $('bSpawnH').disabled = !playing || w.money < c.spawnHerbivoreCost; $('bSpawnHc').textContent = fmt(c.spawnHerbivoreCost); $('bSpawnHd').textContent = t('iv.cells', { n: c.spawnHerbivoreCount });
   $('bSpawnC').disabled = !playing || w.money < c.spawnCarnivoreCost; $('bSpawnCc').textContent = fmt(c.spawnCarnivoreCost); $('bSpawnCd').textContent = t('iv.cells', { n: c.spawnCarnivoreCount });
@@ -1602,7 +1724,7 @@ function updateUI() {
   st.className = ratio > 1 ? 'over' : '';
   $('ctNote').textContent = t('ct.note', { cb: c.carnivoreBiomass });
   $('bUpgrade').disabled = !playing || cost == null || w.money < cost;
-  $('bUpgradeD').textContent = cost == null ? t('ct.max') : t('ct.next', { a: cap, b: containerCap(w, w.level + 1), m: plantMul(w, w.level + 1).toFixed(2) });
+  $('bUpgradeD').textContent = cost == null ? t('ct.max') : t('ct.next', { a: cap, b: containerCap(w, w.level + 1), m: plantMul(w, w.level + 1).toFixed(2), s: c.storageSlotsPerLevel });
   $('bUpgradeC').textContent = cost == null ? 'MAX' : fmt(cost);
 }
 
@@ -1617,6 +1739,7 @@ const TIPS = {
   upkeep: (w, c) => {
     const at = B => fmt2(c.labUpkeepBase + c.labUpkeepBiomassRate * Math.pow(B, c.labUpkeepBiomassExp));
     return t('tip.upkeep', { cb: c.carnivoreBiomass, base: fmt2(c.labUpkeepBase), rate: c.labUpkeepBiomassRate, B: biomass(w), exp: c.labUpkeepBiomassExp,
+      st: w.stored, sf: fmt2(c.storageFeePerSec),
       u: fmt2(upkeepRate(w)), e1: at(100), e2: at(200), e3: at(300) });
   },
   pop: (w, c) => t('tip.pop', { hp: `$${c.herbivorePriceMin}–${c.herbivorePriceMax}`, cp: `$${c.carnivorePriceMin}–${c.carnivorePriceMax}`, B: biomass(w) }),
@@ -1647,7 +1770,7 @@ const GUIDE_STEPS = [
   { key: 'g.carn', target: () => $('bSpawnC'), done: w => w.carns.length > 0,
     params: w => ({ h: Math.min(w.herbs.length, GUIDE_HERBS), n: GUIDE_HERBS, v: fmt(w.cfg.spawnCarnivoreCost) }) },
   { key: 'g.sell', done: w => w.stats.soldC > 0,
-    target: w => w.carns.length >= GUIDE_CARNS ? document.querySelector('.sell.carn[data-pct="0.3"]') : $('cardC'),
+    target: w => w.carns.length >= GUIDE_CARNS ? (isHot(w, 'carn') ? document.querySelector('.sell.carn[data-pct="0.3"]') : $('bStore')) : $('cardC'),
     params: w => ({ c: w.carns.length, n: GUIDE_CARNS }) },
   { key: 'g.box', target: () => $('bUpgrade'), done: (w, g) => w.level >= 2 || g.age > 45,
     params: w => ({ v: fmt(upgradeCost(w) || 0) }) },
@@ -1736,7 +1859,7 @@ const CFG_META = [
   ['economy', [['startMoney', 1], ['targetMoney'], ['labUpkeepBase'], ['labUpkeepBiomassRate'], ['labUpkeepBiomassExp'], ['carnivoreBiomass'], ['arrearsGraceSec']]],
   ['market', [['marketCycleSec'], ['herbivorePriceMin'], ['herbivorePriceMax'], ['carnivorePriceMin'], ['carnivorePriceMax'], ['hotThreshold'], ['priceMomentum'], ['priceResistZone'], ['herbPriceVolatility'], ['carnPriceVolatility'], ['carnShockChance'], ['harvestFee']]],
   ['actions', [['spawnHerbivoreCost'], ['spawnHerbivoreCount'], ['spawnCarnivoreCost'], ['spawnCarnivoreCount'], ['emergencyFeedCost'], ['emergencyFeedCount']]],
-  ['container', [['containerMaxLevel'], ['containerBaseCap'], ['containerCapGrowth'], ['containerPlantBonus'], ['containerUpgradeCost'], ['containerCostGrowth'], ['overcrowdDeathRate']]],
+  ['container', [['containerMaxLevel'], ['containerBaseCap'], ['containerCapGrowth'], ['containerPlantBonus'], ['containerUpgradeCost'], ['containerCostGrowth'], ['overcrowdDeathRate'], ['containerMinArea', 1], ['storageBaseSlots'], ['storageSlotsPerLevel'], ['storageFeePerSec']]],
   ['env', [['defaultLight', 1], ['defaultTemp', 1], ['defaultNutrient', 1], ['lightHeatEffect']]],
   ['plant', [['plantSpawnBaseRate'], ['plantEnergyBase'], ['plantMaxCap']]],
   ['herb', [['herbivoreStartEnergy'], ['herbivoreReproduceThreshold'], ['herbivoreBaseSpeed'], ['herbivoreBaseMetabolism'], ['herbivoreSightRange'], ['herbivoreFleeRange'], ['herbivoreMateRange'], ['herbivoreReproCooldown']]],
