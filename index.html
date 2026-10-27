@@ -387,19 +387,22 @@ const GAME_CONFIG = {
   lightHeatEffect: 0.3,             // 일조량이 실효 수온에 주는 부작용 계수 (레버 제거 후 기본값 고정)
 
   // 식물
-  plantSpawnBaseRate: 5,             // 일조량 0.5일 때 초당 생성 개수
-  plantEnergyBase: 26,              // 영양 0.5일 때 식물 1개 에너지
+  plantSpawnBaseRate: 7,             // 일조량 0.5일 때 초당 생성 개수
+  plantEnergyBase: 12,              // 영양 0.5일 때 식물 1개 에너지
   plantMaxCap: 200,
+  startPlants: 110,                  // 시작 시 풀 개수 (재생 기준량 근처 — 초반 즉시 붕괴 방지)
+  plantRegrowthFloor: 0.05,         // 풀이 바닥났을 때 재생 속도 (기본의 5%)
+  plantRegrowthRef: 110,             // 이 개수(× 컨테이너 식물 배율) 이상 남아 있으면 재생 속도 100%
 
   // 초식 세포
   herbivoreStartEnergy: 40,
   herbivoreReproduceThreshold: 65,
   herbivoreBaseSpeed: 40,
-  herbivoreBaseMetabolism: 2.0,
-  herbivoreSightRange: 80,
+  herbivoreBaseMetabolism: 2,
+  herbivoreSightRange: 130,
   herbivoreFleeRange: 60,           // 육식을 감지하고 도망치는 반경
   herbivoreMateRange: 60,           // 분열에 필요한 동족(정족수) 감지 반경 — Allee 효과
-  herbivoreReproCooldown: 1.2,
+  herbivoreReproCooldown: 0.8,
 
   // 육식 세포
   carnivoreStartEnergy: 80,
@@ -516,7 +519,9 @@ function envFactors(w) {
     effTemp,
     speedMul: 0.55 + 0.9 * effTemp,                         // 이동 속도 배율 (0.55 ~ 1.45)
     metabMul: 0.35 + 1.3 * effTemp,                         // 대사량 배율   (0.35 ~ 1.65) — 속도보다 가파름
-    plantRate: c.plantSpawnBaseRate * (e.light / 0.5) * plantMul(w), // 초당 식물 생성 = 기본값 × (일조량 / 0.5) × 컨테이너 보너스
+    regrow: plantRegrow(w),
+    // 초당 식물 생성 = 기본값 × (일조량 / 0.5) × 컨테이너 보너스 × 재생 배율(남은 풀이 적을수록 느림)
+    plantRate: c.plantSpawnBaseRate * (e.light / 0.5) * plantMul(w) * plantRegrow(w),
     plantEnergy: c.plantEnergyBase * (0.3 + 1.4 * e.nutrient) // 식물 칼로리 = 기본값 × (0.3 ~ 1.7)
   };
 }
@@ -537,6 +542,11 @@ function tankBounds(c, lv) {
 }
 // 보관 칸 = 기본 + 레벨당 추가 × (Lv-1)
 function storageCap(w) { return w.cfg.storageBaseSlots + w.cfg.storageSlotsPerLevel * (w.level - 1); }
+// 풀 재생 배율 = 하한 + (1 - 하한) × min(1, 남은 풀 / (기준 × 컨테이너 배율)) → 풀을 바닥내면 회복이 느려짐
+function plantRegrow(w) {
+  const c = w.cfg, ref = c.plantRegrowthRef * plantMul(w);
+  return c.plantRegrowthFloor + (1 - c.plantRegrowthFloor) * Math.min(1, w.plants.length / ref);
+}
 function upgradeCost(w) { return w.level >= w.cfg.containerMaxLevel ? null : Math.round(w.cfg.containerUpgradeCost * Math.pow(w.cfg.containerCostGrowth, w.level - 1)); }
 function addPlant(w, energy) {
   if (w.plants.length >= w.cfg.plantMaxCap * plantMul(w)) return false;
@@ -562,13 +572,13 @@ function createWorld(cfg, opts = {}) {
       starvedH: 0, starvedC: 0, eaten: 0, peakMoney: cfg.startMoney, herbExt: 0, carnExt: 0,
       maxH: 0, maxC: 0, crashes: 0, hPeak: 0, crowded: 0 },
     events: [], state: 'playing', endTime: 0, endReason: '', arrears: 0, marketTick: false, prevH: 0, prevC: 0,
-    level: 1, crowdWarned: false, stored: 0, bounds: null
+    level: 1, crowdWarned: false, plantWarned: false, stored: 0, bounds: null
   };
   w.market = createMarket(w);
   w.bounds = tankBounds(cfg, 1);
   const F = envFactors(w);
   // 초기 생태계: 식물 20, 초식 10, 육식 0 (명세 5장)
-  for (let i = 0; i < 20; i++) addPlant(w, F.plantEnergy);
+  for (let i = 0; i < cfg.startPlants; i++) addPlant(w, F.plantEnergy);
   const nH = opts.herbs != null ? opts.herbs : 10, nC = opts.carns || 0;
   for (let i = 0; i < nH; i++) addHerbAt(w, WORLD_W / 2 + (w.rng() - .5) * 300, WORLD_H / 2 + (w.rng() - .5) * 200, cfg.herbivoreStartEnergy);
   for (let i = 0; i < nC; i++) addCarnAt(w, WORLD_W / 2 + (w.rng() - .5) * 200, WORLD_H / 2 + (w.rng() - .5) * 150, cfg.carnivoreStartEnergy);
@@ -819,6 +829,10 @@ function populationWatch(w) {
   if (w.prevC >= 2 && C === 1) emit(w, { type: 'toast', kind: 'warn', key: 'to.carnLone' });
   if (w.prevH >= 2 && H === 1) emit(w, { type: 'toast', kind: 'warn', key: 'to.herbLone' });
   w.prevH = H; w.prevC = C;
+  // 풀 고갈 경고 (재생 배율 50% 미만 진입 시 1회)
+  const low = plantRegrow(w) < 0.5;
+  if (low && !w.plantWarned && H > 0) emit(w, { type: 'toast', kind: 'bad', key: 'to.plantLow' });
+  if (!low && plantRegrow(w) > 0.8) w.plantWarned = false; else if (low) w.plantWarned = true;
 }
 
 function checkEnd(w) {
@@ -989,8 +1003,12 @@ const BOTS = {
       // 과밀 방지: 한도 90% 이상이면 더 많이 차지한 쪽을 정리
       if (B > cap * 0.9) { if (H > C * c.carnivoreBiomass) sellSpecies(w, 'herb', 0.3); else { ecoStore(w, 6); if (biomass(w) > cap * 0.9) ecoSell(w, 'carn', 6); } }
       // 개입: 멸종 위기 시에만 지출
+      // 풀 관리: 재생이 느려지면 초식을 줄이고, 거의 바닥이면 영양 살포
+      const rg = plantRegrow(w);
+      if (rg < 0.55 && H > 30) sellSpecies(w, 'herb', 0.3);
+      if (rg < 0.4 && w.money >= c.emergencyFeedCost + 400) emergencyFeed(w);
       if (H < 6 && w.money >= c.spawnHerbivoreCost + 20) spawnHerbivores(w);
-      if (C < 2 && H >= 40 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
+      if (C < 2 && H >= 30 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
       // 육식 과밀(초식 대비)일 때 잉여분을 보관함으로(꽉 차면 매도) → 붕괴 방지
       if (C > 8 && ratio < 2.2) { ecoStore(w, 6); if (w.carns.length > 8) ecoSell(w, 'carn', 6); }
       if (H > 220) sellSpecies(w, 'herb', 0.3);
@@ -1097,11 +1115,11 @@ const I18N = {
     'tip.goal': '<b>Reach {v} to win.</b><br>{p}% done · {left} to go.',
     'tip.time': '<b>Game time.</b> 2× / 4× speed makes everything run faster.<br>Prices change every {s}s.',
     'tip.upkeep': '<b>Lab upkeep</b> rises faster than your population grows.<div class="f">upkeep = base + rate × biomass<sup>exp</sup> + stored × fee<br>biomass = grazers + predators × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> + {st} × {sf} = <b>{u}/s</b></div><div class="dim">Biomass 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>Sell extra cells to keep costs down.</div>',
-    'tip.pop': '<b class="g">● Plants</b>: food for grazers. Bigger containers grow more.<br><b class="c">▲ Grazers</b>: eat plants. Sell for {hp}.<br><b class="r">◆ Predators</b>: hunt grazers. Sell for {cp}.<div class="dim">Cells split only when a mate is nearby. Biomass now: {B}</div>',
+    'tip.pop': '<b class="g">● Plants</b>: food for grazers. Bigger containers grow more; once they run low they regrow very slowly.<br><b class="c">▲ Grazers</b>: eat plants. Sell for {hp}.<br><b class="r">◆ Predators</b>: hunt grazers. Sell for {cp}.<div class="dim">Cells split only when a mate is nearby. Biomass now: {B}</div>',
     'tip.speed': '<b>Game speed.</b> Keys: <b>+</b> / <b>-</b>',
     // 초반 가이드
     'g.title': 'GUIDE', 'g.skip': 'Skip guide',
-    'g.carn': 'Grazers <b>▲</b> eat plants and split. Wait for <b>{h} / {n}</b> grazers, then click <b>◆ Add Predators</b> ({v}). Too early and they starve.',
+    'g.carn': 'Grazers <b>▲</b> eat plants and split. Plants <b class=\"g\">●</b> regrow slowly once they run low! Wait for <b>{h} / {n}</b> grazers, then click <b>◆ Add Predators</b> ({v}). Too early and they starve.',
     'g.box': 'Watch the <b>capacity bar</b>. Past the limit, cells start dying. <b>⬆ Upgrade the container</b> ({v}) to hold more and grow more plants. (Key <b>U</b>)',
     'g.sell': 'Predators: <b>{c} / {n}</b>. Once there are about {n}, deal with the extras. Price low? <b>🧊 Store</b> them. Price high (<b>card flashes red</b>)? Sell. Keep about <b>4</b> in the tank to breed. Low on cash? Sell <b>▲ grazers</b>.',
     'g.end': 'Good! Sell extra cells, keep 4+ predators, and upgrade when the tank fills up.',
@@ -1112,6 +1130,7 @@ const I18N = {
     'to.herbExt': '☠ Grazers extinct: the food chain is broken', 'to.carnExt': '☠ Predators extinct: your main income is gone',
     'to.carnLone': '⚠ 1 predator left: no mate, so it cannot split', 'to.herbLone': '⚠ 1 grazer left: no mate, so it cannot split',
     'to.spike': '📈 Predator price spike: {p}. Time to sell?',
+    'to.plantLow': '🌱 Plants are running out and regrowing slowly! Sell grazers or use Feed Boost.',
     'to.crowd': '⚠ Overcrowded! Cells are dying. Sell or store some, or upgrade the container.',
     'to.storeFull': '🧊 Storage is full. Sell stored predators or upgrade the container.',
     'st.title': '🧊 PREDATOR STORAGE', 'st.store': '🧊 Store {k}<small>30% of tank · [3]</small>', 'st.sell': '◆ Sell stored {n}<small>{v} · [4]</small>',
@@ -1119,7 +1138,7 @@ const I18N = {
     'to.upgrade': '⬆ Container upgraded to Lv {l}. New limit: {cap}',
     'ct.title': 'CONTAINER', 'ct.cap': 'Biomass / limit', 'ct.upgrade': '⬆ Upgrade [U]',
     'ct.next': 'Limit {a}→{b} · plants ×{m} · 🧊+{s}', 'ct.max': 'Fully upgraded',
-    'ct.plants': 'Plants {r}/s (×{m})', 'ct.ok': '{p}% full', 'ct.over': '⚠ OVER +{p}% · cells dying',
+    'ct.plants': 'Plants {r}/s · regrowth {g}', 'ct.ok': '{p}% full', 'ct.over': '⚠ OVER +{p}% · cells dying',
     'ct.note': 'Biomass = grazers + predators × {cb}. Over the limit, random cells die each second.',
     'end.level': 'Container', 'end.crowd': 'Crowding deaths',
     'to.reset': 'Default values restored', 'to.copied': '📋 Config copied to clipboard',
@@ -1148,7 +1167,7 @@ const I18N = {
     'cfg.overcrowdDeathRate': 'Crowding death rate', 'cfg.containerMinArea': 'Lv1 tank area (0–1)',
     'cfg.storageBaseSlots': 'Storage slots (Lv1)', 'cfg.storageSlotsPerLevel': 'Storage slots + per level', 'cfg.storageFeePerSec': 'Storage fee $/s each',
     'cfg.defaultLight': 'Light', 'cfg.defaultTemp': 'Heat', 'cfg.defaultNutrient': 'Nutrients', 'cfg.lightHeatEffect': 'Light warms water by',
-    'cfg.plantSpawnBaseRate': 'Plants/s (at 50% light)', 'cfg.plantEnergyBase': 'Plant energy (at 50%)', 'cfg.plantMaxCap': 'Max plants',
+    'cfg.plantSpawnBaseRate': 'Plants/s (at 50% light)', 'cfg.plantEnergyBase': 'Plant energy (at 50%)', 'cfg.plantMaxCap': 'Max plants', 'cfg.startPlants': 'Starting plants', 'cfg.plantRegrowthFloor': 'Regrowth when empty (0–1)', 'cfg.plantRegrowthRef': 'Plants for full regrowth',
     'cfg.herbivoreStartEnergy': 'Starting energy', 'cfg.herbivoreReproduceThreshold': 'Energy to split', 'cfg.herbivoreBaseSpeed': 'Base speed',
     'cfg.herbivoreBaseMetabolism': 'Energy burn /s', 'cfg.herbivoreSightRange': 'Food sight range', 'cfg.herbivoreFleeRange': 'Flee range',
     'cfg.herbivoreMateRange': 'Mate range', 'cfg.herbivoreReproCooldown': 'Split cooldown (s)',
@@ -1188,10 +1207,10 @@ const I18N = {
     'tip.goal': '<b>잔고 {v}에 도달하면 클리어.</b><br>{p}% 달성 · {left} 남음.',
     'tip.time': '<b>게임 시간.</b> 2× / 4× 배속이면 모든 것이 빨라집니다.<br>시세는 {s}초마다 바뀝니다.',
     'tip.upkeep': '<b>연구소 유지비</b>는 개체 수보다 더 빠르게 늘어납니다.<div class="f">유지비 = 기본 + 계수 × 생물량<sup>지수</sup> + 보관 수 × 보관료<br>생물량 = 초식 수 + 육식 수 × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> + {st} × {sf} = <b>{u}/s</b></div><div class="dim">생물량 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>남는 개체를 팔아 비용을 줄이세요.</div>',
-    'tip.pop': '<b class="g">● 식물</b>: 초식의 먹이. 컨테이너가 클수록 많이 자랍니다.<br><b class="c">▲ 초식</b>: 식물을 먹음. 판매가 {hp}.<br><b class="r">◆ 육식</b>: 초식을 사냥. 판매가 {cp}.<div class="dim">세포는 근처에 짝이 있어야 분열합니다. 현재 생물량: {B}</div>',
+    'tip.pop': '<b class="g">● 식물</b>: 초식의 먹이. 컨테이너가 클수록 많이 자라며, 바닥나면 매우 느리게 재생됩니다.<br><b class="c">▲ 초식</b>: 식물을 먹음. 판매가 {hp}.<br><b class="r">◆ 육식</b>: 초식을 사냥. 판매가 {cp}.<div class="dim">세포는 근처에 짝이 있어야 분열합니다. 현재 생물량: {B}</div>',
     'tip.speed': '<b>게임 배속.</b> 단축키: <b>+</b> / <b>-</b>',
     'g.title': '가이드', 'g.skip': '가이드 건너뛰기',
-    'g.carn': '초식 <b>▲</b>은 식물을 먹고 분열합니다. 초식이 <b>{h} / {n}</b>마리가 되면 <b>◆ 육식 스폰</b>({v})을 누르세요. 너무 일찍 넣으면 굶어 죽습니다.',
+    'g.carn': '초식 <b>▲</b>은 식물을 먹고 분열합니다. 풀 <b class=\"g\">●</b>이 바닥나면 거의 다시 자라지 않습니다! 초식이 <b>{h} / {n}</b>마리가 되면 <b>◆ 육식 스폰</b>({v})을 누르세요. 너무 일찍 넣으면 굶어 죽습니다.',
     'g.box': '<b>수용량 막대</b>를 보세요. 한도를 넘으면 세포가 죽기 시작합니다. <b>⬆ 컨테이너 업그레이드</b>({v})로 한도와 식물 생산량을 늘리세요. (단축키 <b>U</b>)',
     'g.sell': '육식: <b>{c} / {n}</b>. 약 {n}마리가 되면 남는 개체를 처리하세요. 시세가 낮으면 <b>🧊 보관</b>, 높으면(<b>카드가 붉게 깜빡임</b>) 매도. 번식용으로 배양조에 <b>4마리 정도</b>는 남기세요. 현금이 부족하면 <b>▲ 초식</b>을 파세요.',
     'g.end': '좋습니다! 남는 개체는 팔고, 육식은 4마리 이상 남기고, 컨테이너가 차면 업그레이드하세요.',
@@ -1201,6 +1220,7 @@ const I18N = {
     'to.herbExt': '☠ 초식 세포 멸종: 먹이사슬 붕괴', 'to.carnExt': '☠ 육식 세포 멸종: 주 수입원 중단',
     'to.carnLone': '⚠ 육식 1마리: 짝이 없어 분열 불가', 'to.herbLone': '⚠ 초식 1마리: 짝이 없어 분열 불가',
     'to.spike': '📈 육식 시세 급등 {p}: 매도 찬스',
+    'to.plantLow': '🌱 풀이 바닥나 재생이 느려지고 있습니다! 초식을 팔거나 영양 살포를 쓰세요.',
     'to.crowd': '⚠ 과밀! 세포가 죽고 있습니다. 일부를 팔거나 보관하고, 컨테이너를 업그레이드하세요.',
     'to.storeFull': '🧊 보관함이 가득 찼습니다. 보관분을 팔거나 컨테이너를 업그레이드하세요.',
     'st.title': '🧊 육식 보관함', 'st.store': '🧊 {k}마리 보관<small>배양조의 30% · [3]</small>', 'st.sell': '◆ 보관분 {n}마리 매도<small>{v} · [4]</small>',
@@ -1208,7 +1228,7 @@ const I18N = {
     'to.upgrade': '⬆ 컨테이너 Lv {l} 업그레이드 완료. 새 한도: {cap}',
     'ct.title': '컨테이너', 'ct.cap': '생물량 / 한도', 'ct.upgrade': '⬆ 업그레이드 [U]',
     'ct.next': '한도 {a}→{b} · 식물 ×{m} · 🧊+{s}', 'ct.max': '최대 레벨',
-    'ct.plants': '식물 {r}개/s (×{m})', 'ct.ok': '{p}% 사용', 'ct.over': '⚠ 초과 +{p}% · 세포 사망 중',
+    'ct.plants': '식물 {r}개/s · 재생 {g}', 'ct.ok': '{p}% 사용', 'ct.over': '⚠ 초과 +{p}% · 세포 사망 중',
     'ct.note': '생물량 = 초식 + 육식 × {cb}. 한도를 넘으면 매초 무작위로 세포가 죽습니다.',
     'end.level': '컨테이너', 'end.crowd': '과밀 사망',
     'to.reset': '기본값으로 복원했습니다', 'to.copied': '📋 설정 코드를 클립보드에 복사했습니다',
@@ -1236,7 +1256,7 @@ const I18N = {
     'cfg.overcrowdDeathRate': '과밀 사망 계수', 'cfg.containerMinArea': 'Lv1 배양조 면적 (0~1)',
     'cfg.storageBaseSlots': '보관 칸 (Lv1)', 'cfg.storageSlotsPerLevel': '레벨당 보관 칸 추가', 'cfg.storageFeePerSec': '마리당 보관료 $/s',
     'cfg.defaultLight': '일조량', 'cfg.defaultTemp': '수온', 'cfg.defaultNutrient': '영양 염류', 'cfg.lightHeatEffect': '일조량→수온 부작용',
-    'cfg.plantSpawnBaseRate': '초당 생성 (일조 50%)', 'cfg.plantEnergyBase': '식물 에너지 (영양 50%)', 'cfg.plantMaxCap': '식물 최대 개수',
+    'cfg.plantSpawnBaseRate': '초당 생성 (일조 50%)', 'cfg.plantEnergyBase': '식물 에너지 (영양 50%)', 'cfg.plantMaxCap': '식물 최대 개수', 'cfg.startPlants': '시작 풀 개수', 'cfg.plantRegrowthFloor': '고갈 시 재생 배율 (0~1)', 'cfg.plantRegrowthRef': '재생 100% 기준 풀 수',
     'cfg.herbivoreStartEnergy': '초기 에너지', 'cfg.herbivoreReproduceThreshold': '분열 임계치', 'cfg.herbivoreBaseSpeed': '기본 속도',
     'cfg.herbivoreBaseMetabolism': '기본 대사량 /s', 'cfg.herbivoreSightRange': '먹이 탐색 반경', 'cfg.herbivoreFleeRange': '도주 감지 반경',
     'cfg.herbivoreMateRange': '정족수(짝) 반경', 'cfg.herbivoreReproCooldown': '분열 쿨다운',
@@ -1718,7 +1738,7 @@ function updateUI() {
   $('ctCapTxt').textContent = `${B} / ${cap}`;
   $('ctCapBar').style.width = (Math.min(1, ratio) * 100).toFixed(1) + '%';
   $('ctBar').className = 'capbar' + (ratio > 1 ? ' over' : ratio > 0.8 ? ' warn' : '');
-  $('ctPlants').textContent = t('ct.plants', { r: F.plantRate.toFixed(1), m: plantMul(w).toFixed(2) });
+  $('ctPlants').innerHTML = t('ct.plants', { r: F.plantRate.toFixed(1), g: F.regrow < 0.5 ? `<b class="neg">${Math.round(F.regrow * 100)}%</b>` : Math.round(F.regrow * 100) + '%' });
   const st = $('ctState');
   st.textContent = ratio > 1 ? t('ct.over', { p: Math.round((ratio - 1) * 100) }) : t('ct.ok', { p: Math.round(ratio * 100) });
   st.className = ratio > 1 ? 'over' : '';
@@ -1861,7 +1881,7 @@ const CFG_META = [
   ['actions', [['spawnHerbivoreCost'], ['spawnHerbivoreCount'], ['spawnCarnivoreCost'], ['spawnCarnivoreCount'], ['emergencyFeedCost'], ['emergencyFeedCount']]],
   ['container', [['containerMaxLevel'], ['containerBaseCap'], ['containerCapGrowth'], ['containerPlantBonus'], ['containerUpgradeCost'], ['containerCostGrowth'], ['overcrowdDeathRate'], ['containerMinArea', 1], ['storageBaseSlots'], ['storageSlotsPerLevel'], ['storageFeePerSec']]],
   ['env', [['defaultLight', 1], ['defaultTemp', 1], ['defaultNutrient', 1], ['lightHeatEffect']]],
-  ['plant', [['plantSpawnBaseRate'], ['plantEnergyBase'], ['plantMaxCap']]],
+  ['plant', [['plantSpawnBaseRate'], ['plantEnergyBase'], ['plantMaxCap'], ['startPlants', 1], ['plantRegrowthFloor'], ['plantRegrowthRef']]],
   ['herb', [['herbivoreStartEnergy'], ['herbivoreReproduceThreshold'], ['herbivoreBaseSpeed'], ['herbivoreBaseMetabolism'], ['herbivoreSightRange'], ['herbivoreFleeRange'], ['herbivoreMateRange'], ['herbivoreReproCooldown']]],
   ['carn', [['carnivoreStartEnergy'], ['carnivoreReproduceThreshold'], ['carnivoreBaseSpeed'], ['carnivoreBaseMetabolism'], ['carnivoreSightRange'], ['carnivoreEnergyYield'], ['carnivoreMateRange'], ['carnivoreDigestTime'], ['carnivoreReproCooldown'], ['carnivoreSpacing']]],
   ['system', [['maxHerbivores'], ['maxCarnivores']]]
