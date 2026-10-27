@@ -46,17 +46,32 @@ header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
 .speed{display:flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden}
 .speed button{background:transparent;border:0;padding:7px 11px;font-weight:700;color:var(--dim)}
 .speed button.on{background:#123553;color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
-#btnTuner{background:#0d1d2d;border:1px solid var(--line2);border-radius:6px;padding:7px 11px}
-#btnTuner:hover{border-color:var(--cyan)}
 
 /* ---------- 메인 캔버스 ---------- */
 #stage{grid-row:2;grid-column:1;position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#02060a;min-height:0}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+[data-tip]{cursor:help}
+#tip{position:fixed;z-index:25;width:max-content;max-width:340px;background:#0a1826;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;
+  font-size:12px;line-height:1.6;pointer-events:none;box-shadow:0 8px 28px rgba(0,0,0,.6)}
+#tip.hidden{display:none}
+#tip b{color:#fff}
+#tip .f{margin:6px 0 2px;padding:6px 8px;background:#06101a;border-left:2px solid var(--gold);color:var(--gold);font-size:11.5px}
+#tip .calc{color:var(--text);font-size:11.5px;padding:0 8px}
+#tip .dim{color:var(--dim);font-size:11px;margin-top:6px}
 #toasts{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:46%}
 .toast{background:rgba(6,14,22,.86);border:1px solid var(--line2);border-left:3px solid var(--cyan);padding:7px 10px;border-radius:5px;
   font-size:12px;animation:tin .25s ease-out;transition:opacity .5s}
 .toast.warn{border-left-color:var(--gold)} .toast.bad{border-left-color:var(--red);color:#ffc2cd} .toast.good{border-left-color:var(--green)}
 @keyframes tin{from{transform:translateX(-12px);opacity:0}}
+#guide{position:absolute;left:16px;bottom:16px;width:min(430px,62%);background:#1c1505;border:2px solid var(--gold);border-radius:10px;color:#fff3d6;
+  padding:12px 14px;font-size:14px;line-height:1.6;box-shadow:0 0 28px rgba(255,209,102,.35);animation:tin .3s ease-out,gpulse 1.6s infinite alternate}
+@keyframes gpulse{from{box-shadow:0 0 14px rgba(255,209,102,.2)}to{box-shadow:0 0 34px rgba(255,209,102,.55)}}
+#guide.hidden{display:none}
+#guide b{color:var(--gold)}
+.gstep{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--gold);margin-bottom:4px;display:flex;justify-content:space-between}
+.gstep button{background:transparent;border:0;color:var(--dim);font-size:10px;letter-spacing:.05em;text-decoration:underline}
+.guide-hi{outline:2px solid var(--gold);outline-offset:3px;border-radius:8px;animation:ghi .9s infinite alternate}
+@keyframes ghi{from{outline-color:rgba(255,209,102,.35)}to{outline-color:rgba(255,209,102,1)}}
 #pauseTag{position:absolute;left:50%;top:12px;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--dim);pointer-events:none}
 
 /* ---------- 마켓 호가창 ---------- */
@@ -80,12 +95,15 @@ header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
 .card.hot{animation:hot .8s infinite alternate;border-color:var(--red)}
 .card.hot::after{content:"HIGH";position:absolute;right:10px;top:-8px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;letter-spacing:.1em}
 @keyframes hot{from{box-shadow:0 0 0 rgba(255,45,85,0);background:#061019}to{box-shadow:0 0 22px rgba(255,45,85,.45) inset;background:#1a0710}}
-.sellgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.sell{padding:10px 6px;border-radius:6px;font-weight:700;font-size:12px;background:#0b1a28;border:1px solid var(--line2);position:relative}
-.sell small{display:block;font-size:10px;color:var(--dim);font-weight:400;margin-top:2px}
-.sell.herb:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 10px rgba(34,228,255,.3)}
-.sell.carn{border-color:#4a1626;background:#160810}
-.sell.carn:hover:not(:disabled){border-color:var(--red);box-shadow:0 0 12px rgba(255,45,85,.4)}
+.card.herb{border-color:#15485c} .card.carn{border-color:#5a1a2c}
+.sellrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.sell{padding:8px 6px;border-radius:6px;font-weight:800;font-size:14px;border:1px solid;position:relative}
+.sell small{display:block;font-size:10.5px;font-weight:400;margin-top:2px;opacity:.85}
+.sell.herb{background:rgba(34,228,255,.10);border-color:rgba(34,228,255,.5);color:#c8f8ff}
+.sell.herb:hover:not(:disabled){background:rgba(34,228,255,.2);box-shadow:0 0 12px rgba(34,228,255,.4)}
+.sell.carn{background:rgba(255,45,85,.13);border-color:rgba(255,45,85,.55);color:#ffd3dc}
+.sell.carn:hover:not(:disabled){background:rgba(255,45,85,.25);box-shadow:0 0 14px rgba(255,45,85,.5)}
+.sell .neg{color:#ff8a9e}
 .fee{font-size:10px;color:var(--dim);text-align:center}
 .log{font-size:11px;color:var(--dim);display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;min-height:60px}
 .log div b{color:var(--gold)}
@@ -95,17 +113,26 @@ header{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 14px}
 #controls .panel{padding:12px;min-height:0}
 .free{color:var(--green);border:1px solid #1d5a3a;border-radius:3px;padding:0 5px;font-size:10px}
 .paid{color:var(--gold);border:1px solid #5a4a1d;border-radius:3px;padding:0 5px;font-size:10px}
-.lever{display:grid;grid-template-columns:26px 190px minmax(80px,1fr) 52px 150px;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;border:1px solid transparent}
-.lever.sel{border-color:var(--line2);background:#0b1b2b}
-.lk{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line2);border-radius:4px;font-size:11px;font-weight:700;color:var(--dim)}
-.lever.sel .lk{color:var(--bg);background:var(--cyan);border-color:var(--cyan)}
-.ln{font-weight:700} .ln small{display:block;font-weight:400;font-size:10px;color:var(--dim)}
-.lv{font-weight:800;text-align:right;font-size:14px}
-.ld{font-size:11px;color:var(--dim);white-space:nowrap}
+.lvtag{color:var(--gold);border:1px solid #5a4a1d;border-radius:3px;padding:0 6px;font-size:11px;font-weight:800}
+.lvpips{display:flex;gap:3px}
+.lvpips i{width:14px;height:5px;border-radius:2px;background:#16324a}
+.lvpips i.on{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.ctrow{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px;align-items:center}
+.ctcap{font-size:12px;margin-bottom:6px} .ctcap b{font-size:16px}
+.capbar{height:16px;background:#0d2033;border-radius:4px;overflow:hidden;position:relative;border:1px solid var(--line2)}
+.capbar i{display:block;height:100%;width:0;background:var(--green);box-shadow:0 0 10px var(--green);transition:width .2s}
+.capbar.warn i{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.capbar.over{border-color:var(--red);animation:capblink .5s infinite alternate}
+@keyframes capblink{to{border-color:#ff9db0;box-shadow:0 0 14px rgba(255,45,85,.7)}}
+.capbar.over i{background:var(--red);box-shadow:0 0 12px var(--red)}
+.ctsub{font-size:11px;color:var(--dim);margin-top:6px}
+#ctState.over{color:var(--red);font-weight:800}
+.ctnote{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.5}
+.ib.up{height:100%;justify-content:center}
+.ib.up b{color:var(--gold);font-size:15px}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#0e2338;outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--thumb,var(--cyan));box-shadow:0 0 10px var(--thumb,var(--cyan));cursor:pointer}
 input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:0;background:var(--thumb,var(--cyan));box-shadow:0 0 10px var(--thumb,var(--cyan))}
-#lvLight{--thumb:#ffe066} #lvTemp{--thumb:#ff7a45} #lvNut{--thumb:var(--green)}
 .ibtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .ib{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;border-radius:8px;background:#0b1a28;border:1px solid var(--line2);text-align:left}
 .ib b{font-size:13px} .ib span{font-size:10px;color:var(--dim)} .ib em{font-style:normal;font-weight:800;color:var(--gold);font-size:16px}
@@ -117,14 +144,20 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 /* ---------- 오버레이 (시작/종료) ---------- */
 #overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,6,10,.72);backdrop-filter:blur(3px);z-index:20}
 #overlay.hidden{display:none}
-.ovbox{width:min(620px,92vw);border:1px solid var(--line2);border-radius:12px;background:rgba(7,17,27,.94);padding:30px 34px;text-align:center;box-shadow:0 0 60px rgba(34,228,255,.08)}
+.ovbox{width:min(660px,92vw);border:1px solid var(--line2);border-radius:12px;background:rgba(7,17,27,.94);padding:30px 34px;text-align:center;box-shadow:0 0 60px rgba(34,228,255,.08)}
 .ovbox h1{font-size:34px;letter-spacing:.14em;color:#eaf6ff;text-shadow:0 0 18px rgba(255,45,85,.5)}
 .ovbox h2{font-size:14px;letter-spacing:.4em;color:var(--red);margin-top:4px}
 .ovbox .tag{display:inline-block;margin:16px 0 18px;padding:4px 12px;border:1px solid var(--line2);border-radius:20px;font-size:11px;letter-spacing:.15em;color:var(--cyan)}
-.ovbox ul{list-style:none;text-align:left;line-height:1.85;font-size:12.5px;margin:0 auto 22px;max-width:520px}
+.ovbox ul{list-style:none;text-align:left;line-height:1.9;font-size:13px;margin:0 auto 14px;max-width:470px}
+.linkbtn{background:transparent;border:0;color:var(--dim);font-size:12px;text-decoration:underline}
+.linkbtn:hover{color:var(--gold)}
+.goalline{font-size:14px;letter-spacing:.12em;color:var(--dim);margin-bottom:20px}
 .ovbox li::before{content:"› ";color:var(--cyan)}
 .bigbtn{padding:14px 34px;font-size:15px;font-weight:800;letter-spacing:.1em;border-radius:8px;background:#0c2a3f;border:1px solid var(--cyan);color:var(--cyan);text-shadow:0 0 8px var(--cyan);box-shadow:0 0 20px rgba(34,228,255,.25)}
 .bigbtn:hover{background:#12405e}
+.langsel{display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 18px;font-size:11px;letter-spacing:.15em;color:var(--dim)}
+.langsel button{padding:6px 16px;border-radius:6px;background:#0b1a28;border:1px solid var(--line2);color:var(--dim);font-size:12px;letter-spacing:.05em}
+.langsel button.on{border-color:var(--cyan);color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
 .ovbox.over h1{color:var(--red);font-size:26px}
 .ovbox.clear h1{color:var(--gold);font-size:26px;text-shadow:0 0 22px rgba(255,209,102,.6)}
 .emblem{width:110px;height:110px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:48px;border:2px solid currentColor}
@@ -138,6 +171,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 #tuner{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:rgba(6,13,21,.97);border-left:1px solid var(--line2);z-index:30;
   transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
 #tuner.open{transform:none}
+.tnote{margin:12px 0 4px;padding:10px 12px;border:1px solid #5a4a1d;background:#171204;border-radius:6px;color:#ffe3a3;font-size:12px;line-height:1.6}
+.tnote b{color:var(--gold)}
 .thead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
 .thead b{letter-spacing:.12em}
 .tbtns{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line)}
@@ -158,8 +193,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 .simbar i{display:block;height:100%;width:0;background:var(--gold)}
 
 /* ---------- 반응형 ---------- */
-@media (max-width:1320px){ .brand{min-width:0} .brand .sub{display:none} .hstats{gap:14px} .lever{grid-template-columns:26px 150px minmax(70px,1fr) 46px 130px} }
-@media (max-width:1150px){ .stat.pop,.brand>div:last-child{display:none} #app{grid-template-columns:minmax(0,1fr) 290px} .ln small{display:none} }
+@media (max-width:1320px){ .brand{min-width:0} .brand .sub{display:none} .hstats{gap:14px} .ctrow{grid-template-columns:minmax(0,1fr) 190px} }
+@media (max-width:1150px){ .stat.pop,.brand>div:last-child{display:none} #app{grid-template-columns:minmax(0,1fr) 290px} .ctnote{display:none} }
 </style>
 </head>
 <body>
@@ -171,15 +206,14 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
       <div><div class="title">SELL THE PREDATOR</div><div class="sub">BREED &amp; BLEED · BIO-LAB MONITOR</div></div>
     </div>
     <div class="hstats">
-      <div class="stat money"><label>현재 잔고</label><span id="hMoney">💰 $0</span></div>
-      <div class="stat goal"><label id="hGoalLbl">목표 잔고 $100,000</label><div class="goalbar"><i id="hGoalBar"></i></div><span id="hGoalPct">0%</span></div>
-      <div class="stat"><label>경과 시간</label><span id="hTime">00:00</span></div>
-      <div class="stat"><label>연구소 유지비</label><span id="hUpkeep" class="neg">-$0/s</span></div>
-      <div class="stat pop"><label>배양 개체 (식물 · 초식 · 육식)</label><span><b class="g">● <i id="hP">0</i></b><b class="c">▲ <i id="hH">0</i></b><b class="r">◆ <i id="hC">0</i></b></span></div>
+      <div class="stat money" data-tip="money"><label data-i18n="hdr.money"></label><span id="hMoney">💰 $0</span></div>
+      <div class="stat goal" data-tip="goal"><label id="hGoalLbl"></label><div class="goalbar"><i id="hGoalBar"></i></div><span id="hGoalPct">0%</span></div>
+      <div class="stat" data-tip="time"><label data-i18n="hdr.time"></label><span id="hTime">00:00</span></div>
+      <div class="stat" data-tip="upkeep"><label data-i18n="hdr.upkeep"></label><span id="hUpkeep" class="neg">-$0/s</span></div>
+      <div class="stat pop" data-tip="pop"><label data-i18n="hdr.pop"></label><span><b class="g">● <i id="hP">0</i></b><b class="c">▲ <i id="hH">0</i></b><b class="r">◆ <i id="hC">0</i></b></span></div>
     </div>
     <div class="hctrl">
-      <div class="speed" id="speedBtns"><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
-      <button id="btnTuner">⚙️ 밸런스 튜너</button>
+      <div class="speed" id="speedBtns" data-tip="speed"><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button></div>
     </div>
   </header>
 
@@ -187,85 +221,84 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
   <div id="stage">
     <canvas id="cv"></canvas>
     <div id="toasts"></div>
+    <div id="guide" class="hidden"></div>
   </div>
 
   <!-- ================= 우측 바이오 마켓 ================= -->
   <aside id="market">
-    <div class="ptitle">BIO-MARKET <span>· 호가창</span></div>
+    <div class="ptitle">BIO-MARKET <span data-i18n="mk.sub"></span></div>
     <div class="cycle">
-      <div class="row"><span>다음 시세 변동</span><span id="mTimer">15.0s</span></div>
+      <div class="row"><span data-i18n="mk.next"></span><span id="mTimer">15.0s</span></div>
       <div class="bar"><i id="mBar"></i></div>
-      <div id="mEvent" class="event">시장 개장</div>
+      <div id="mEvent" class="event"></div>
     </div>
     <div class="card herb" id="cardH">
-      <div class="row"><span class="nm"><b class="c">▲</b> 초식 세포</span><span class="hold">보유 <b id="mHoldH">0</b>마리</span></div>
+      <div class="row"><span class="nm"><b class="c">▲</b> <span data-i18n="sp.herb"></span></span><span class="hold" id="mHoldH"></span></div>
       <div class="price"><span id="mPriceH">$0</span><span id="mChgH" class="chg">—</span></div>
       <canvas class="spark" id="sparkH"></canvas>
-      <div class="row small"><span id="mRangeH">범위</span><span>30% <b id="mEstH30">$0</b> · 50% <b id="mEstH50">$0</b></span></div>
+      <div class="row small"><span id="mRangeH"></span></div>
+      <div class="sellrow">
+        <button class="sell herb" data-kind="herb" data-pct="0.3"></button>
+        <button class="sell herb" data-kind="herb" data-pct="0.5"></button>
+      </div>
     </div>
     <div class="card carn" id="cardC">
-      <div class="row"><span class="nm"><b class="r">◆</b> 육식 세포</span><span class="hold">보유 <b id="mHoldC">0</b>마리</span></div>
+      <div class="row"><span class="nm"><b class="r">◆</b> <span data-i18n="sp.carn"></span></span><span class="hold" id="mHoldC"></span></div>
       <div class="price"><span id="mPriceC">$0</span><span id="mChgC" class="chg">—</span></div>
       <canvas class="spark" id="sparkC"></canvas>
-      <div class="row small"><span id="mRangeC">범위</span><span>30% <b id="mEstC30">$0</b> · 50% <b id="mEstC50">$0</b></span></div>
+      <div class="row small"><span id="mRangeC"></span></div>
+      <div class="sellrow">
+        <button class="sell carn" data-kind="carn" data-pct="0.3"></button>
+        <button class="sell carn" data-kind="carn" data-pct="0.5"></button>
+      </div>
     </div>
-    <div class="sellgrid">
-      <button class="sell herb" data-kind="herb" data-pct="0.3">초식 30% 매도<small>[1]</small></button>
-      <button class="sell herb" data-kind="herb" data-pct="0.5">초식 50% 매도<small>&nbsp;</small></button>
-      <button class="sell carn" data-kind="carn" data-pct="0.3">육식 30% 매도<small>[2]</small></button>
-      <button class="sell carn" data-kind="carn" data-pct="0.5">육식 50% 매도<small>&nbsp;</small></button>
-    </div>
-    <div class="fee" id="feeNote">매도 1회당 고정 수수료 $10 · 최소 1마리 체결</div>
-    <div class="log" id="tradeLog"><div>체결 내역 없음</div></div>
+    <div class="fee" id="feeNote"></div>
+    <div class="log" id="tradeLog"></div>
   </aside>
 
   <!-- ================= 하단 컨트롤 대시보드 ================= -->
   <section id="controls">
     <div class="panel">
-      <div class="ptitle">환경 레버 조율 <span class="free">FREE</span></div>
-      <div class="lever" data-lever="light">
-        <div class="lk">Q</div><div class="ln">☀ 일조량<small>식물 생성 빈도 · 수온 소폭 상승</small></div>
-        <input type="range" min="0" max="100" step="1" id="lvLight"><div class="lv" id="lvLightV">50%</div><div class="ld" id="lvLightD"></div>
-      </div>
-      <div class="lever" data-lever="temp">
-        <div class="lk">W</div><div class="ln">🌡 수온<small>이동 속도 · 대사량 동시 증가</small></div>
-        <input type="range" min="0" max="100" step="1" id="lvTemp"><div class="lv" id="lvTempV">50%</div><div class="ld" id="lvTempD"></div>
-      </div>
-      <div class="lever" data-lever="nutrient">
-        <div class="lk">E</div><div class="ln">⚗ 영양 염류<small>식물 1개의 칼로리</small></div>
-        <input type="range" min="0" max="100" step="1" id="lvNut"><div class="lv" id="lvNutV">50%</div><div class="ld" id="lvNutD"></div>
+      <div class="ptitle"><span data-i18n="ct.title"></span> <span class="lvtag" id="ctLv">Lv 1</span><span class="lvpips" id="ctPips"></span></div>
+      <div class="ctrow">
+        <div>
+          <div class="row ctcap"><span data-i18n="ct.cap"></span><b id="ctCapTxt">0 / 0</b></div>
+          <div class="capbar" id="ctBar"><i id="ctCapBar"></i></div>
+          <div class="row ctsub"><span id="ctPlants"></span><span id="ctState"></span></div>
+          <div class="ctnote" id="ctNote"></div>
+        </div>
+        <button id="bUpgrade" class="ib up"><b data-i18n="ct.upgrade"></b><span id="bUpgradeD"></span><em id="bUpgradeC"></em></button>
       </div>
     </div>
     <div class="panel">
-      <div class="ptitle">직접 개입 <span class="paid">PAID</span></div>
+      <div class="ptitle"><span data-i18n="iv.title"></span> <span class="paid">PAID</span></div>
       <div class="ibtns">
-        <button id="bSpawnH" class="ib herb"><b>▲ 초식 스폰</b><span id="bSpawnHd">10마리 · 중앙 투입</span><em id="bSpawnHc">$50</em></button>
-        <button id="bSpawnC" class="ib carn"><b>◆ 육식 스폰</b><span id="bSpawnCd">2마리 · 중앙 투입</span><em id="bSpawnCc">$400</em></button>
-        <button id="bFeed" class="ib feed"><b>● 영양 살포</b><span id="bFeedd">식물 20개 · [S]</span><em id="bFeedc">$30</em></button>
+        <button id="bSpawnH" class="ib herb"><b data-i18n="iv.herb"></b><span id="bSpawnHd"></span><em id="bSpawnHc"></em></button>
+        <button id="bSpawnC" class="ib carn"><b data-i18n="iv.carn"></b><span id="bSpawnCd"></span><em id="bSpawnCc"></em></button>
+        <button id="bFeed" class="ib feed"><b data-i18n="iv.feed"></b><span id="bFeedd"></span><em id="bFeedc"></em></button>
       </div>
-      <div class="keys">
-        <kbd>1</kbd> 초식 30% 매도 · <kbd>2</kbd> 육식 30% 매도 · <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> 레버 선택 후 <kbd>←</kbd><kbd>→</kbd> 조절 ·
-        <kbd>S</kbd> 영양 살포 · <kbd>+</kbd><kbd>-</kbd> 배속 · <kbd>~</kbd> 밸런스 튜너
-      </div>
+      <div class="keys" data-i18n="keys"></div>
     </div>
   </section>
 </div>
 
 <!-- ================= 오버레이 (상태 머신 화면) ================= -->
+<div id="tip" class="hidden"></div>
 <div id="overlay"></div>
 
 <!-- ================= 밸런스 튜너 (인스펙터) ================= -->
 <div id="tuner">
-  <div class="thead"><b>⚙️ BALANCE TUNER</b><button id="tClose">닫기 [~]</button></div>
+  <div class="thead"><b>⚙️ BALANCE TUNER</b><button id="tClose" data-i18n="tu.close"></button></div>
   <div class="tbtns">
-    <button id="tCopy">📋 설정 코드 복사</button>
-    <button id="tSim">▶ 밸런스 시뮬레이션</button>
-    <button id="tReset">↺ 기본값 복원</button>
-    <button id="tRestart">⟳ 현재 설정으로 재시작</button>
+    <button id="tCopy" data-i18n="tu.copy"></button>
+    <button id="tSim" data-i18n="tu.sim"></button>
+    <button id="tReset" data-i18n="tu.reset"></button>
+    <button id="tRestart" data-i18n="tu.restart"></button>
   </div>
   <div class="tbody">
-    <div class="tsec">BALANCE SIMULATION · 헤드리스 봇 3종</div>
-    <div id="simOut"><div style="color:var(--dim);margin-top:6px">현재 설정값으로 Greedy / Hoarder / Eco-Trader 봇을 각각 최대 20분(게임 시간) 가상 실행합니다.</div></div>
+    <div class="tnote" data-i18n="tu.note"></div>
+    <div class="tsec" data-i18n="tu.simSec"></div>
+    <div id="simOut"><div style="color:var(--dim);margin-top:6px" data-i18n="tu.simIntro"></div></div>
     <div id="tFields"></div>
   </div>
 </div>
@@ -280,20 +313,27 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 const GAME_CONFIG = {
   // 시작 자본 및 목표
   startMoney: 1800,                 // 초기 자금
-  targetMoney: 100000,              // 클리어 목표 자금
-  // 연구소 유지비 ($/초) = 기본 + 초식 수 × 개체당 + 육식 수 × 개체당  — 초식 매도는 '유지비 벌이'용
-  labUpkeepBase: 4,
-  labUpkeepPerHerb: 0.04,
-  labUpkeepPerCarn: 0.25,
+  targetMoney: 50000,               // 클리어 목표 자금
+  // 연구소 유지비 ($/초) = 기본 + 계수 × 생물량^지수  (생물량 = 초식 수 + 육식 수 × 육식 생물량)
+  // 지수 > 1 이므로 개체가 늘수록 유지비가 가파르게 증가 — 초식 매도는 '유지비 벌이'용
+  labUpkeepBase: 7,
+  labUpkeepBiomassRate: 0.005,
+  labUpkeepBiomassExp: 1.5,
+  carnivoreBiomass: 6,              // 육식 1마리 = 초식 6마리분 생물량
   arrearsGraceSec: 30,              // 잔고 $0(유지비 체납) 상태가 이 시간 지속되면 파산
 
   // 마켓 시세 및 판매
   marketCycleSec: 15,               // 시세 변동 주기 (초)
   herbivorePriceMin: 5,
   herbivorePriceMax: 15,
-  carnivorePriceMin: 200,
-  carnivorePriceMax: 720,
+  carnivorePriceMin: 220,
+  carnivorePriceMax: 820,
   hotThreshold: 0.7,                // 정규화 시세(0~1)가 이 값 이상이면 '고점' (호가창 점멸)
+  priceMomentum: 0.6,               // 직전 변동량을 이어받는 비율 (클수록 추세가 오래 지속)
+  priceResistZone: 0.25,            // 상·하단 저항 구간 폭 (0.25 → 정규화 0.75 이상 / 0.25 이하)
+  herbPriceVolatility: 0.07,        // 초식 시세 랜덤 충격 크기 (안정 자산)
+  carnPriceVolatility: 0.12,        // 육식 시세 랜덤 충격 크기 (위험 자산)
+  carnShockChance: 0.08,            // 사이클당 육식 급등(또는 폭락) 이벤트 확률
   harvestFee: 10,                   // 1회 매도 버튼 클릭 시 고정 수수료
 
   // 유료 개입
@@ -304,26 +344,35 @@ const GAME_CONFIG = {
   emergencyFeedCost: 60,
   emergencyFeedCount: 20,
 
+  // 컨테이너 — 업그레이드할수록 생물량 한도·식물 생성량 증가 (Lv1 + 업그레이드 5회)
+  containerMaxLevel: 6,
+  containerBaseCap: 90,             // Lv1 생물량 한도
+  containerCapGrowth: 1.35,         // 레벨당 한도 배율   → 90, 122, 164, 221, 299, 404
+  containerPlantBonus: 0.25,        // 레벨당 식물 생성량 +25%
+  containerUpgradeCost: 800,        // Lv1→2 업그레이드 비용
+  containerCostGrowth: 2.7,         // 레벨당 비용 배율   → 800, 2160, 5832, 15746, 42515
+  overcrowdDeathRate: 0.6,          // 한도 초과 시 개체별 초당 사망 확률 = 계수 × 초과 비율
+
   // 환경 레버 기본값 (0.0 ~ 1.0)
   defaultLight: 0.5,
   defaultTemp: 0.5,
   defaultNutrient: 0.5,
-  lightHeatEffect: 0.3,             // 일조량이 실효 수온에 주는 부작용 계수
+  lightHeatEffect: 0.3,             // 일조량이 실효 수온에 주는 부작용 계수 (레버 제거 후 기본값 고정)
 
   // 식물
-  plantSpawnBaseRate: 3.2,           // 일조량 0.5일 때 초당 생성 개수
-  plantEnergyBase: 20,              // 영양 0.5일 때 식물 1개 에너지
+  plantSpawnBaseRate: 5,             // 일조량 0.5일 때 초당 생성 개수
+  plantEnergyBase: 26,              // 영양 0.5일 때 식물 1개 에너지
   plantMaxCap: 200,
 
   // 초식 세포
   herbivoreStartEnergy: 40,
-  herbivoreReproduceThreshold: 80,
+  herbivoreReproduceThreshold: 65,
   herbivoreBaseSpeed: 40,
   herbivoreBaseMetabolism: 2.0,
   herbivoreSightRange: 80,
   herbivoreFleeRange: 60,           // 육식을 감지하고 도망치는 반경
   herbivoreMateRange: 60,           // 분열에 필요한 동족(정족수) 감지 반경 — Allee 효과
-  herbivoreReproCooldown: 2,
+  herbivoreReproCooldown: 1.2,
 
   // 육식 세포
   carnivoreStartEnergy: 80,
@@ -334,7 +383,7 @@ const GAME_CONFIG = {
   carnivoreEnergyYield: 92,
   carnivoreMateRange: 180,
   carnivoreDigestTime: 1.0,         // 포식 후 소화 시간 (사냥 휴지기)
-  carnivoreReproCooldown: 10,
+  carnivoreReproCooldown: 13,
   carnivoreSpacing: 70,             // 육식끼리 유지하려는 최소 간격 (영역성)
 
   // 시스템 한계
@@ -424,12 +473,14 @@ class SpatialGrid {
 /* =====================================================================
    [3] 월드 상태 생성 & 환경 공식
    ===================================================================== */
-// 환경 레버 → 실제 생태 계수
-// 연구소 유지비: 배양 개체가 많을수록 사료·산소·폐기물 처리 비용 증가
+// 생물량: 초식 1 + 육식 carnivoreBiomass 단위
+function biomass(w) { return w.herbs.length + w.carns.length * w.cfg.carnivoreBiomass; }
+// 연구소 유지비: 생물량에 초선형 비례 (사료·산소·폐기물 처리 비용이 규모에 따라 급증)
 function upkeepRate(w) {
   const c = w.cfg;
-  return c.labUpkeepBase + w.herbs.length * c.labUpkeepPerHerb + w.carns.length * c.labUpkeepPerCarn;
+  return c.labUpkeepBase + c.labUpkeepBiomassRate * Math.pow(biomass(w), c.labUpkeepBiomassExp);
 }
+// 환경 레버 → 실제 생태 계수
 function envFactors(w) {
   const c = w.cfg, e = w.env;
   // 실효 수온 = 수온 + (일조량 - 0.5) × 부작용 계수  (일조량이 높으면 물이 데워짐)
@@ -438,7 +489,7 @@ function envFactors(w) {
     effTemp,
     speedMul: 0.55 + 0.9 * effTemp,                         // 이동 속도 배율 (0.55 ~ 1.45)
     metabMul: 0.35 + 1.3 * effTemp,                         // 대사량 배율   (0.35 ~ 1.65) — 속도보다 가파름
-    plantRate: c.plantSpawnBaseRate * (e.light / 0.5),      // 초당 식물 생성 = 기본값 × (일조량 / 0.5)
+    plantRate: c.plantSpawnBaseRate * (e.light / 0.5) * plantMul(w), // 초당 식물 생성 = 기본값 × (일조량 / 0.5) × 컨테이너 보너스
     plantEnergy: c.plantEnergyBase * (0.3 + 1.4 * e.nutrient) // 식물 칼로리 = 기본값 × (0.3 ~ 1.7)
   };
 }
@@ -448,8 +499,12 @@ function makeAgent(w, x, y, e) {
   const a = w.rng() * Math.PI * 2;
   return { id: _uid++, x, y, vx: Math.cos(a) * 10, vy: Math.sin(a) * 10, e, cd: 1 + w.rng(), wa: a, hd: a, dg: 0, dead: false, bt: w.t };
 }
+// 컨테이너 공식: 한도 = 기본 × 성장^(Lv-1), 식물 배율 = 1 + 보너스 × (Lv-1), 비용 = 기본 × 성장^(Lv-1)
+function containerCap(w, lv = w.level) { return Math.round(w.cfg.containerBaseCap * Math.pow(w.cfg.containerCapGrowth, lv - 1)); }
+function plantMul(w, lv = w.level) { return 1 + w.cfg.containerPlantBonus * (lv - 1); }
+function upgradeCost(w) { return w.level >= w.cfg.containerMaxLevel ? null : Math.round(w.cfg.containerUpgradeCost * Math.pow(w.cfg.containerCostGrowth, w.level - 1)); }
 function addPlant(w, energy) {
-  if (w.plants.length >= w.cfg.plantMaxCap) return false;
+  if (w.plants.length >= w.cfg.plantMaxCap * plantMul(w)) return false;
   w.plants.push({ x: 20 + w.rng() * (WORLD_W - 40), y: 20 + w.rng() * (WORLD_H - 40), e: energy, dead: false, bt: w.t });
   return true;
 }
@@ -469,8 +524,9 @@ function createWorld(cfg, opts = {}) {
     market: null, history: [], histAcc: 0,
     stats: { soldH: 0, soldC: 0, revenue: 0, fees: 0, upkeep: 0, spent: 0, bornH: 0, bornC: 0,
       starvedH: 0, starvedC: 0, eaten: 0, peakMoney: cfg.startMoney, herbExt: 0, carnExt: 0,
-      maxH: 0, maxC: 0, crashes: 0, hPeak: 0 },
-    events: [], state: 'playing', endTime: 0, endReason: '', arrears: 0, marketTick: false, prevH: 0, prevC: 0
+      maxH: 0, maxC: 0, crashes: 0, hPeak: 0, crowded: 0 },
+    events: [], state: 'playing', endTime: 0, endReason: '', arrears: 0, marketTick: false, prevH: 0, prevC: 0,
+    level: 1, crowdWarned: false
   };
   w.market = createMarket(w);
   const F = envFactors(w);
@@ -675,6 +731,7 @@ function stepWorld(w, dt) {
   w.plants = w.plants.filter(p => !p.dead);
   w.herbs = w.herbs.filter(h => !h.dead);
   w.carns = w.carns.filter(k => !k.dead);
+  overcrowd(w, dt);
   populationWatch(w);
 
   // 시세 타이머
@@ -685,7 +742,10 @@ function stepWorld(w, dt) {
   const up = Math.min(w.money, upkeepRate(w) * dt);
   w.money -= up; w.stats.upkeep += up;
   // 체납 타이머: 잔고가 바닥난 채로 유예 시간이 지나면 파산
-  if (w.money <= 0.001) w.arrears += dt; else w.arrears = 0;
+  // $200 이상 회복해야 리셋 — 소액 매도로 잠깐 플러스가 되는 정도로는 천천히만 줄어듦
+  if (w.money <= 0.001) w.arrears += dt;
+  else if (w.money >= 200) w.arrears = 0;
+  else w.arrears = Math.max(0, w.arrears - dt * 0.5);
 
   // 그래프 히스토리 (0.25초 간격, 최근 2분)
   w.histAcc += dt;
@@ -697,6 +757,19 @@ function stepWorld(w, dt) {
   checkEnd(w);
 }
 
+// 과밀 사망: 생물량이 컨테이너 한도를 넘으면 모든 개체가 (계수 × 초과 비율 × dt) 확률로 무작위 사망
+function overcrowd(w, dt) {
+  const B = biomass(w), cap = containerCap(w);
+  if (B <= cap) { if (B < cap * 0.9) w.crowdWarned = false; return; }
+  const pDie = w.cfg.overcrowdDeathRate * (B / cap - 1) * dt;
+  let died = 0;
+  for (const list of [w.herbs, w.carns]) for (const o of list) {
+    if (w.rng() < pDie) { o.dead = true; died++; emit(w, { type: 'death', x: o.x, y: o.y, kind: 'crowd' }); }
+  }
+  if (died) { w.stats.crowded += died; w.herbs = w.herbs.filter(o => !o.dead); w.carns = w.carns.filter(o => !o.dead); }
+  if (!w.crowdWarned) { w.crowdWarned = true; emit(w, { type: 'toast', kind: 'bad', key: 'to.crowd' }); }
+}
+
 // 개체수 감시: 멸종·폭락 통계 및 경고 이벤트
 function populationWatch(w) {
   const H = w.herbs.length, C = w.carns.length, s = w.stats;
@@ -704,10 +777,10 @@ function populationWatch(w) {
   // 집단 아사(붕괴) 감지: 직전 고점(≥30) 대비 절반 이하로 떨어지면 1회
   if (H > s.hPeak) s.hPeak = H;
   else if (s.hPeak >= 30 && H < s.hPeak * 0.5) { s.crashes++; s.hPeak = H; }
-  if (w.prevH > 0 && H === 0) { s.herbExt++; emit(w, { type: 'toast', kind: 'bad', msg: '☠ 초식 세포 멸종 — 먹이사슬 붕괴' }); }
-  if (w.prevC > 0 && C === 0) { s.carnExt++; emit(w, { type: 'toast', kind: 'bad', msg: '☠ 육식 세포 멸종 — 생산 라인 중단' }); }
-  if (w.prevC >= 2 && C === 1) emit(w, { type: 'toast', kind: 'warn', msg: '⚠ 육식 1마리 — 짝이 없어 분열 불가' });
-  if (w.prevH >= 2 && H === 1) emit(w, { type: 'toast', kind: 'warn', msg: '⚠ 초식 1마리 — 짝이 없어 분열 불가' });
+  if (w.prevH > 0 && H === 0) { s.herbExt++; emit(w, { type: 'toast', kind: 'bad', key: 'to.herbExt' }); }
+  if (w.prevC > 0 && C === 0) { s.carnExt++; emit(w, { type: 'toast', kind: 'bad', key: 'to.carnExt' }); }
+  if (w.prevC >= 2 && C === 1) emit(w, { type: 'toast', kind: 'warn', key: 'to.carnLone' });
+  if (w.prevH >= 2 && H === 1) emit(w, { type: 'toast', kind: 'warn', key: 'to.herbLone' });
   w.prevH = H; w.prevC = C;
 }
 
@@ -729,29 +802,43 @@ function priceOf(c, kind, p) {
     : Math.round(c.carnivorePriceMin + p * (c.carnivorePriceMax - c.carnivorePriceMin));
 }
 function createMarket(w) {
-  const m = { timer: w.cfg.marketCycleSec, cycle: 0, event: '시장 개장', eventKind: '',
-    herb: { p: 0.5, price: 0, prev: 0, hist: [] }, carn: { p: 0.35, price: 0, prev: 0, hist: [] } };
+  const m = { timer: w.cfg.marketCycleSec, cycle: 0, event: 'open', eventKind: '',
+    herb: { p: 0.5, v: 0, price: 0, prev: 0, hist: [] }, carn: { p: 0.35, v: 0, price: 0, prev: 0, hist: [] } };
   for (const k of ['herb', 'carn']) { const s = m[k]; s.price = s.prev = priceOf(w.cfg, k, s.p); s.hist.push(s.price); }
   return m;
 }
 function isHot(w, kind) { return w.market[kind].p >= w.cfg.hotThreshold; }
+// 추세형 시세 한 걸음 (모멘텀 + 경계 저항)
+// - 변동량 v = 직전 v × 모멘텀 + 랜덤 충격 → 오르던 시세는 다음에도 오를 확률이 높음
+// - 상·하단 저항 구간에 들어가면 깊이(k: 0~1)에 비례해 같은 방향 이동을 줄이고 반대쪽으로 밀어냄
+function stepPrice(s, c, rng, vol) {
+  let v = s.v * c.priceMomentum + gauss(rng) * vol;
+  const z = c.priceResistZone, hi = s.p - (1 - z), lo = z - s.p;
+  if (hi > 0) { const k = Math.min(1, hi / z); if (v > 0) v *= 1 - 0.95 * k; v -= k * 0.15; }
+  else if (lo > 0) { const k = Math.min(1, lo / z); if (v < 0) v *= 1 - 0.95 * k; v += k * 0.15; }
+  s.v = v;
+  s.p = clamp(s.p + v, 0, 1);
+  if (s.p <= 0 || s.p >= 1) s.v *= -0.3;          // 끝에 닿으면 약하게 반동
+}
 function updateMarket(w) {
   const m = w.market, c = w.cfg, rng = w.rng, H = m.herb, C = m.carn;
   m.cycle++;
   H.prev = H.price; C.prev = C.price;
-  // 초식: 완만한 평균회귀 랜덤워크 + 장주기 사인파 (안정 자산)
-  H.p = clamp(H.p + (0.5 - H.p) * 0.3 + gauss(rng) * 0.16 + Math.sin(w.t / 110) * 0.06, 0, 1);
-  // 육식: 큰 변동성 랜덤워크 + 급등/폭락 이벤트 (위험 자산)
+  // 초식: 작은 충격의 추세형 시세 (안정 자산)
+  stepPrice(H, c, rng, c.herbPriceVolatility);
+  // 육식: 큰 충격 + 급등/폭락 이벤트가 추세 자체를 꺾음 (위험 자산) — 효과가 여러 사이클에 걸쳐 이어짐
   const r = rng();
-  if (r < 0.16) { C.p = 0.82 + rng() * 0.18; m.event = '📈 육식 세포 수요 급등! 연구 기관 대량 매입'; m.eventKind = 'spike'; }
-  else if (r < 0.30) { C.p = rng() * 0.18; m.event = '📉 육식 세포 시세 폭락 — 공급 과잉 루머'; m.eventKind = 'crash'; }
-  else { C.p = clamp(C.p + (0.45 - C.p) * 0.35 + gauss(rng) * 0.26, 0, 1); m.event = '시세 갱신 — 정상 거래'; m.eventKind = ''; }
+  m.eventKind = '';
+  if (r < c.carnShockChance) { C.v = Math.max(C.v, 0) + 0.25 + rng() * 0.1; m.eventKind = 'spike'; }
+  else if (r < c.carnShockChance * 2) { C.v = Math.min(C.v, 0) - 0.25 - rng() * 0.1; m.eventKind = 'crash'; }
+  stepPrice(C, c, rng, c.carnPriceVolatility);
+  m.event = m.eventKind || (C.v > 0.04 ? 'up' : C.v < -0.04 ? 'down' : 'normal');
   H.price = priceOf(c, 'herb', H.p); C.price = priceOf(c, 'carn', C.p);
   H.hist.push(H.price); C.hist.push(C.price);
   if (H.hist.length > 30) H.hist.shift(); if (C.hist.length > 30) C.hist.shift();
   w.marketTick = true;
   emit(w, { type: 'market' });
-  if (m.eventKind === 'spike') emit(w, { type: 'toast', kind: 'bad', msg: `📈 육식 시세 급등 $${C.price} — 매도 찬스` });
+  if (m.eventKind === 'spike') emit(w, { type: 'toast', kind: 'bad', key: 'to.spike', p: { p: '$' + C.price } });
 }
 
 /* =====================================================================
@@ -791,6 +878,13 @@ function spawnCarnivores(w) {
   for (let i = 0; i < c.spawnCarnivoreCount; i++) addCarnAt(w, WORLD_W / 2 + (w.rng() - .5) * 40, WORLD_H / 2 + (w.rng() - .5) * 40, c.carnivoreStartEnergy);
   emit(w, { type: 'spawn', kind: 'carn' }); w.prevC = w.carns.length; return true;
 }
+function upgradeContainer(w) {
+  const cost = upgradeCost(w);
+  if (w.state !== 'playing' || cost == null || w.money < cost) return false;
+  w.money -= cost; w.stats.spent += cost; w.level++;
+  emit(w, { type: 'upgrade', level: w.level, cap: containerCap(w) });
+  return true;
+}
 function emergencyFeed(w) {
   const c = w.cfg; if (w.state !== 'playing' || w.money < c.emergencyFeedCost) return false;
   w.money -= c.emergencyFeedCost; w.stats.spent += c.emergencyFeedCost;
@@ -804,32 +898,30 @@ function emergencyFeed(w) {
    ===================================================================== */
 const BOTS = {
   greedy: {
-    label: '방치/탐욕 (Greedy)', goal: '10분 내 멸종·파산',
     tick() {},
-    // 고점이면 무조건 50% 매도, 스폰·레버 조작 없음
+    // 고점이면 무조건 50% 매도, 스폰·업그레이드 없음
     market(w) { if (isHot(w, 'herb')) sellSpecies(w, 'herb', 0.5); if (isHot(w, 'carn')) sellSpecies(w, 'carn', 0.5); },
     pass(r) { return r.outcome === 'BANKRUPT' && r.time <= 600; }
   },
   hoarder: {
-    label: '생태계 방임 (Hoarder)', goal: '수익 0 · 폭증/집단 아사 반복',
-    // 레버만 만지고(초식 늘리기에 집중) 판매는 하지 않음. 관상용으로 육식을 한 번 들여놓음
+    // 컨테이너는 키우지만 판매는 하지 않음. 관상용으로 육식을 한 번 들여놓음
     tick(w) {
       const H = w.herbs.length;
-      w.env.light = H < 40 ? 0.9 : 0.6; w.env.nutrient = 0.7; w.env.temp = 0.5;
       if (!w._bought && H > 30 && w.money >= w.cfg.spawnCarnivoreCost) { spawnCarnivores(w); w._bought = true; }
+      if (w._bought) upgradeContainer(w);
     },
     market() {},
     pass(r) { return r.peakMoney <= r.startMoney + 1 && (r.crashes >= 1 || r.outcome === 'BANKRUPT'); }
   },
   eco: {
-    label: '생태학 트레이더 (Eco-Trader)', goal: '20분 내 $100,000',
     tick(w) {
       const c = w.cfg, H = w.herbs.length, C = w.carns.length;
       const ratio = C > 0 ? H / C : 99;                 // 육식 1마리당 초식 수
-      // 레버: 초식이 부족하면 일조/영양을 올려 식물을 늘리고, 육식이 굶주리면 수온을 낮춤
-      w.env.light = H < 60 ? 1.0 : H > 160 ? 0.55 : 0.8;
-      w.env.nutrient = H < 60 ? 0.9 : 0.7;
-      w.env.temp = ratio > 8 ? 0.6 : ratio < 3 ? 0.3 : 0.45;
+      // 컨테이너: 생물량이 한도의 70%를 넘고 여유 자금이 있으면 업그레이드
+      const cost = upgradeCost(w), B = biomass(w), cap = containerCap(w);
+      if (cost != null && B > cap * 0.7 && C >= 4 && w.money >= cost * 1.2 + 300) upgradeContainer(w);
+      // 과밀 방지: 한도 90% 이상이면 더 많이 차지한 쪽을 정리
+      if (B > cap * 0.9) { if (H > C * c.carnivoreBiomass) sellSpecies(w, 'herb', 0.3); else ecoSell(w, 'carn', 6); }
       // 개입: 멸종 위기 시에만 지출
       if (H < 6 && w.money >= c.spawnHerbivoreCost + 20) spawnHerbivores(w);
       if (C < 2 && H >= 40 && w.money >= c.spawnCarnivoreCost) spawnCarnivores(w);
@@ -874,7 +966,7 @@ function* simulateBot(botKey, cfg, seed, maxTime = 1200) {
   }
   const outcome = w.state === 'clear' ? 'CLEAR' : w.state === 'over' ? 'BANKRUPT' : 'TIMEOUT';
   const r = { bot: botKey, seed, outcome, time: w.state === 'playing' ? w.t : w.endTime, money: w.money,
-    startMoney: cfg.startMoney, peakMoney: w.stats.peakMoney, ...w.stats, H: w.herbs.length, C: w.carns.length };
+    startMoney: cfg.startMoney, peakMoney: w.stats.peakMoney, ...w.stats, H: w.herbs.length, C: w.carns.length, level: w.level };
   r.pass = bot.pass(r);
   return r;
 }
@@ -884,6 +976,201 @@ function runBotSync(botKey, cfg, seed, maxTime) {
   return s.value;
 }
 // ==SIM-END==
+
+/* =====================================================================
+   [i18n] 언어 리소스 — 게임에 표시되는 모든 문구 (en: 영어 / ko: 한국어)
+   - {name} 형태는 t(key, {name: 값})으로 치환
+   - 일부 값은 <b>, <small>, <kbd> 등 HTML 포함 (innerHTML로 적용)
+   ===================================================================== */
+const I18N = {
+  en: {
+    // 시작 화면
+    'menu.lang': 'LANGUAGE',
+    'menu.l1': '<b class="g">●</b> → <b class="c">▲ Grazers</b> → <b class="r">◆ Predators</b>. Grow a food chain, sell cells for cash.',
+    'menu.l2': '<b>Upgrade the container</b> to hold more. Overcrowd it and cells die.',
+    'menu.l3': 'Predators pay big, but keep a few. Cells need a mate nearby to split.',
+    'menu.l4': 'Upkeep grows with your population. $0 for {s}s = <b class="r">bankrupt</b>.',
+    'menu.goal': 'GOAL <b style="color:var(--gold)">{v}</b>',
+    'menu.start': 'START CULTURE', 'menu.guideAgain': '↺ Show the guide again',
+    // 종료 화면
+    'end.clear': 'You reached {v} in {t}.',
+    'end.arrears': 'Your balance stayed at $0 for {s}s and upkeep went unpaid. The lab was shut down.',
+    'end.extinct': 'Every cell died out, and you had less than {v} left to restart.',
+    'end.time': 'Time', 'end.money': 'Final balance', 'end.revenue': 'Total sales', 'end.peak': 'Peak balance',
+    'end.sold': 'Sold (G / P)', 'end.costs': 'Fees + upkeep', 'end.spent': 'Spent on actions', 'end.max': 'Max count (G / P)',
+    'end.born': 'Splits (G / P)', 'end.starved': 'Starved (G / P)', 'end.eaten': 'Grazers eaten', 'end.ext': 'Extinctions (G / P)',
+    'end.restart': 'RESTART',
+    // 헤더
+    'hdr.money': 'BALANCE', 'hdr.goal': 'GOAL {v}', 'hdr.time': 'TIME', 'hdr.upkeep': 'UPKEEP',
+    'hdr.pop': 'PLANTS · GRAZERS · PREDATORS', 'hdr.arrears': '⚠ Unpaid! Bankrupt in {s}s',
+    // 마켓
+    'mk.sub': '· PRICES', 'mk.next': 'Next price update', 'mk.hold': 'Own {n}', 'mk.range': 'Range {a}–{b}',
+    'mk.fee': 'Fee {f} per sale · sells at least 1', 'mk.noTrades': 'No trades yet',
+    'mk.log': '{time} {sym} {n} × {p} = <b>+{g}</b> (fee −{f})', 'log.herb': '▲', 'log.carn': '◆',
+    'sp.herb': 'Grazer', 'sp.carn': 'Predator', 'sp.herbs': 'grazers', 'sp.carns': 'predators',
+    'sell.btn': '{sym} Sell {k}<small>{pct}% · {v}{key}</small>',
+    'ev.open': 'Market open', 'ev.spike': '📈 Predator demand spikes! Labs are buying', 'ev.crash': '📉 Predator price crash: too many for sale', 'ev.normal': 'Prices updated: normal trading', 'ev.up': '↗ Predator prices are trending up', 'ev.down': '↘ Predator prices are trending down',
+    // 환경 레버
+    // 유료 개입
+    'iv.title': 'INTERVENE', 'iv.herb': '▲ Add Grazers', 'iv.carn': '◆ Add Predators', 'iv.feed': '● Feed Boost',
+    'iv.cells': '{n} cells · center', 'iv.plants': '{n} plants · [S]',
+    'keys': '<kbd>1</kbd> sell 30% grazers · <kbd>2</kbd> sell 30% predators · <kbd>U</kbd> upgrade container · <kbd>S</kbd> feed boost · <kbd>+</kbd><kbd>-</kbd> speed',
+    // 그래프
+    'gr.title': 'LOTKA–VOLTERRA · LAST 2 MIN',
+    // 헤더 툴팁
+    'tip.money': '<b>Your cash.</b> Sales add money; upkeep and paid actions take it away.<br>If it stays at $0 for {s}s, you go bankrupt.<div class="dim">Peak {peak} · total sales {rev}</div>',
+    'tip.goal': '<b>Reach {v} to win.</b><br>{p}% done · {left} to go.',
+    'tip.time': '<b>Game time.</b> 2× / 4× speed makes everything run faster.<br>Prices change every {s}s.',
+    'tip.upkeep': '<b>Lab upkeep</b> rises faster than your population grows.<div class="f">upkeep = base + rate × biomass<sup>exp</sup><br>biomass = grazers + predators × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> = <b>{u}/s</b></div><div class="dim">Biomass 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>Sell extra cells to keep costs down.</div>',
+    'tip.pop': '<b class="g">● Plants</b>: food for grazers. Bigger containers grow more.<br><b class="c">▲ Grazers</b>: eat plants. Sell for {hp}.<br><b class="r">◆ Predators</b>: hunt grazers. Sell for {cp}.<div class="dim">Cells split only when a mate is nearby. Biomass now: {B}</div>',
+    'tip.speed': '<b>Game speed.</b> Keys: <b>+</b> / <b>-</b>',
+    // 초반 가이드
+    'g.title': 'GUIDE', 'g.skip': 'Skip guide',
+    'g.carn': 'Grazers <b>▲</b> eat plants and split. Wait for <b>{h} / {n}</b> grazers, then click <b>◆ Add Predators</b> ({v}). Too early and they starve.',
+    'g.box': 'Watch the <b>capacity bar</b>. Past the limit, cells start dying. <b>⬆ Upgrade the container</b> ({v}) to hold more and grow more plants. (Key <b>U</b>)',
+    'g.sell': 'Predators: <b>{c} / {n}</b>. Let them grow to about {n}, then sell some at a good price (a <b>red flashing card</b> is best). Keep about <b>4</b> alive so they can breed. Low on cash? Sell some <b>▲ grazers</b>.',
+    'g.end': 'Good! Sell extra cells, keep 4+ predators, and upgrade when the tank fills up.',
+    // 토스트
+    'to.start': '🧫 Culture started. Add predators once grazers multiply.',
+    'to.noCells': 'No {name} to sell', 'to.noMoney': 'Not enough money',
+    'to.bigSale': '💸 Sold {n} predators for {v} profit',
+    'to.herbExt': '☠ Grazers extinct: the food chain is broken', 'to.carnExt': '☠ Predators extinct: your main income is gone',
+    'to.carnLone': '⚠ 1 predator left: no mate, so it cannot split', 'to.herbLone': '⚠ 1 grazer left: no mate, so it cannot split',
+    'to.spike': '📈 Predator price spike: {p}. Time to sell?',
+    'to.crowd': '⚠ Overcrowded! Cells are dying. Sell some or upgrade the container.',
+    'to.upgrade': '⬆ Container upgraded to Lv {l}. New limit: {cap}',
+    'ct.title': 'CONTAINER', 'ct.cap': 'Biomass / limit', 'ct.upgrade': '⬆ Upgrade [U]',
+    'ct.next': 'Limit {a} → {b} · plants ×{m}', 'ct.max': 'Fully upgraded',
+    'ct.plants': 'Plants {r}/s (×{m})', 'ct.ok': '{p}% full', 'ct.over': '⚠ OVER +{p}% · cells dying',
+    'ct.note': 'Biomass = grazers + predators × {cb}. Over the limit, random cells die each second.',
+    'end.level': 'Container', 'end.crowd': 'Crowding deaths',
+    'to.reset': 'Default values restored', 'to.copied': '📋 Config copied to clipboard',
+    // 튜너
+    'tu.close': 'Close [`]', 'tu.copy': '📋 Copy config', 'tu.sim': '▶ Run bot test', 'tu.reset': '↺ Reset defaults', 'tu.restart': '⟳ Restart with these',
+    'tu.note': '🧪 <b>Your lab, your rules.</b> Change any number below to rebalance the whole game, then play your own version. Most changes work right away; some need a restart.',
+    'tu.simSec': 'BALANCE SIMULATION · 3 BOTS',
+    'tu.simIntro': 'Runs the Greedy, Hoarder and Eco-Trader bots on the current settings, up to 20 game minutes each.',
+    'tu.thBot': 'Bot', 'tu.thResult': 'Result', 'tu.thTime': 'Time', 'tu.thMoney': 'Final / peak', 'tu.thSold': 'Predators sold', 'tu.thGoal': 'Goal',
+    'tu.rowSub': 'seed {s} · max ▲{h} ◆{c} · {k} crashes', 'tu.done': 'Done: {p}/{n} goals met', 'tu.running': 'Running… ({i}/{n})',
+    'tu.restartNote': 'on restart',
+    'out.CLEAR': 'CLEAR', 'out.BANKRUPT': 'BANKRUPT', 'out.TIMEOUT': 'TIME UP',
+    'bot.greedy': 'Greedy', 'bot.greedy.goal': 'Bankrupt within 10 min',
+    'bot.hoarder': 'Hoarder', 'bot.hoarder.goal': 'No profit · boom and bust',
+    'bot.eco': 'Eco-Trader', 'bot.eco.goal': '{v} within 20 min',
+    'sec.economy': 'Economy', 'sec.market': 'Market', 'sec.actions': 'Paid actions', 'sec.env': 'Fixed environment', 'sec.container': 'Container',
+    'sec.plant': 'Plants', 'sec.herb': 'Grazers', 'sec.carn': 'Predators', 'sec.system': 'System',
+    'cfg.startMoney': 'Starting money', 'cfg.targetMoney': 'Goal money', 'cfg.labUpkeepBase': 'Upkeep base $/s',
+    'cfg.labUpkeepBiomassRate': 'Upkeep rate', 'cfg.labUpkeepBiomassExp': 'Upkeep exponent', 'cfg.carnivoreBiomass': 'Biomass per predator', 'cfg.arrearsGraceSec': 'Time allowed at $0 (s)',
+    'cfg.marketCycleSec': 'Price update every (s)', 'cfg.herbivorePriceMin': 'Grazer price min', 'cfg.herbivorePriceMax': 'Grazer price max',
+    'cfg.carnivorePriceMin': 'Predator price min', 'cfg.carnivorePriceMax': 'Predator price max', 'cfg.hotThreshold': 'High price level (0–1)', 'cfg.harvestFee': 'Sale fee', 'cfg.priceMomentum': 'Price trend carry-over', 'cfg.priceResistZone': 'Price resistance zone', 'cfg.herbPriceVolatility': 'Grazer price swings', 'cfg.carnPriceVolatility': 'Predator price swings', 'cfg.carnShockChance': 'Spike / crash chance',
+    'cfg.spawnHerbivoreCost': 'Add grazers: cost', 'cfg.spawnHerbivoreCount': 'Add grazers: count', 'cfg.spawnCarnivoreCost': 'Add predators: cost',
+    'cfg.spawnCarnivoreCount': 'Add predators: count', 'cfg.emergencyFeedCost': 'Feed boost: cost', 'cfg.emergencyFeedCount': 'Feed boost: plants',
+    'cfg.containerMaxLevel': 'Max level', 'cfg.containerBaseCap': 'Lv1 biomass limit', 'cfg.containerCapGrowth': 'Limit × per level',
+    'cfg.containerPlantBonus': 'Plants + per level', 'cfg.containerUpgradeCost': 'First upgrade cost', 'cfg.containerCostGrowth': 'Cost × per level',
+    'cfg.overcrowdDeathRate': 'Crowding death rate',
+    'cfg.defaultLight': 'Light', 'cfg.defaultTemp': 'Heat', 'cfg.defaultNutrient': 'Nutrients', 'cfg.lightHeatEffect': 'Light warms water by',
+    'cfg.plantSpawnBaseRate': 'Plants/s (at 50% light)', 'cfg.plantEnergyBase': 'Plant energy (at 50%)', 'cfg.plantMaxCap': 'Max plants',
+    'cfg.herbivoreStartEnergy': 'Starting energy', 'cfg.herbivoreReproduceThreshold': 'Energy to split', 'cfg.herbivoreBaseSpeed': 'Base speed',
+    'cfg.herbivoreBaseMetabolism': 'Energy burn /s', 'cfg.herbivoreSightRange': 'Food sight range', 'cfg.herbivoreFleeRange': 'Flee range',
+    'cfg.herbivoreMateRange': 'Mate range', 'cfg.herbivoreReproCooldown': 'Split cooldown (s)',
+    'cfg.carnivoreStartEnergy': 'Starting energy', 'cfg.carnivoreReproduceThreshold': 'Energy to split', 'cfg.carnivoreBaseSpeed': 'Base speed',
+    'cfg.carnivoreBaseMetabolism': 'Energy burn /s', 'cfg.carnivoreSightRange': 'Hunt sight range', 'cfg.carnivoreEnergyYield': 'Energy per kill',
+    'cfg.carnivoreMateRange': 'Mate range', 'cfg.carnivoreDigestTime': 'Digest time (s)', 'cfg.carnivoreReproCooldown': 'Split cooldown (s)',
+    'cfg.carnivoreSpacing': 'Personal space', 'cfg.maxHerbivores': 'Max grazers', 'cfg.maxCarnivores': 'Max predators'
+  },
+  ko: {
+    'menu.lang': '언어',
+    'menu.l1': '<b class="g">●</b> → <b class="c">▲ 초식</b> → <b class="r">◆ 육식</b> 먹이사슬을 키워 팔아서 돈을 버세요.',
+    'menu.l2': '<b>컨테이너를 업그레이드</b>해 더 많이 키우세요. 한도를 넘으면 세포가 죽습니다.',
+    'menu.l3': '육식은 비싸게 팔리지만 몇 마리는 남기세요. 짝이 있어야 분열합니다.',
+    'menu.l4': '유지비는 개체가 많을수록 오릅니다. 잔고 $0으로 {s}초면 <b class="r">파산</b>.',
+    'menu.goal': '목표 <b style="color:var(--gold)">{v}</b>',
+    'menu.start': '배양 시작 (START)', 'menu.guideAgain': '↺ 가이드 다시 보기',
+    'end.clear': '{t} 만에 목표 잔고 {v}에 도달했습니다.',
+    'end.arrears': '잔고 $0 상태로 {s}초 동안 유지비를 내지 못해 연구소가 문을 닫았습니다.',
+    'end.extinct': '모든 세포가 멸종했고, 생태계를 되살릴 돈({v})도 남지 않았습니다.',
+    'end.time': '경과 시간', 'end.money': '최종 잔고', 'end.revenue': '총 매출', 'end.peak': '최고 잔고',
+    'end.sold': '매도 (초식/육식)', 'end.costs': '수수료 · 유지비', 'end.spent': '개입 지출', 'end.max': '최대 개체 (초식/육식)',
+    'end.born': '분열 (초식/육식)', 'end.starved': '아사 (초식/육식)', 'end.eaten': '잡아먹힌 초식', 'end.ext': '멸종 (초식/육식)',
+    'end.restart': '다시 배양 (RESTART)',
+    'hdr.money': '현재 잔고', 'hdr.goal': '목표 잔고 {v}', 'hdr.time': '경과 시간', 'hdr.upkeep': '연구소 유지비',
+    'hdr.pop': '배양 개체 (식물 · 초식 · 육식)', 'hdr.arrears': '⚠ 체납! {s}초 후 파산',
+    'mk.sub': '· 호가창', 'mk.next': '다음 시세 변동', 'mk.hold': '보유 {n}마리', 'mk.range': '범위 {a}~{b}',
+    'mk.fee': '매도 1회당 수수료 {f} · 최소 1마리 체결', 'mk.noTrades': '체결 내역 없음',
+    'mk.log': '{time} {sym} {n}마리 × {p} = <b>+{g}</b> (수수료 -{f})', 'log.herb': '▲초식', 'log.carn': '◆육식',
+    'sp.herb': '초식 세포', 'sp.carn': '육식 세포', 'sp.herbs': '초식 세포', 'sp.carns': '육식 세포',
+    'sell.btn': '{sym} {k}마리 매도<small>{pct}% · {v}{key}</small>',
+    'ev.open': '시장 개장', 'ev.spike': '📈 육식 세포 수요 급등! 연구 기관 대량 매입', 'ev.crash': '📉 육식 세포 시세 폭락: 공급 과잉', 'ev.normal': '시세 갱신: 정상 거래', 'ev.up': '↗ 육식 시세 상승세', 'ev.down': '↘ 육식 시세 하락세',
+    'iv.title': '직접 개입', 'iv.herb': '▲ 초식 스폰', 'iv.carn': '◆ 육식 스폰', 'iv.feed': '● 영양 살포',
+    'iv.cells': '{n}마리 · 중앙 투입', 'iv.plants': '식물 {n}개 · [S]',
+    'keys': '<kbd>1</kbd> 초식 30% 매도 · <kbd>2</kbd> 육식 30% 매도 · <kbd>U</kbd> 컨테이너 업그레이드 · <kbd>S</kbd> 영양 살포 · <kbd>+</kbd><kbd>-</kbd> 배속',
+    'gr.title': 'LOTKA–VOLTERRA MONITOR · 최근 2분',
+    'tip.money': '<b>보유 현금.</b> 매도하면 늘고, 유지비와 유료 개입으로 줄어듭니다.<br>잔고 $0이 {s}초 이어지면 파산합니다.<div class="dim">최고 {peak} · 총 매출 {rev}</div>',
+    'tip.goal': '<b>잔고 {v}에 도달하면 클리어.</b><br>{p}% 달성 · {left} 남음.',
+    'tip.time': '<b>게임 시간.</b> 2× / 4× 배속이면 모든 것이 빨라집니다.<br>시세는 {s}초마다 바뀝니다.',
+    'tip.upkeep': '<b>연구소 유지비</b>는 개체 수보다 더 빠르게 늘어납니다.<div class="f">유지비 = 기본 + 계수 × 생물량<sup>지수</sup><br>생물량 = 초식 수 + 육식 수 × {cb}</div><div class="calc">= {base} + {rate} × {B}<sup>{exp}</sup> = <b>{u}/s</b></div><div class="dim">생물량 100 → {e1}/s · 200 → {e2}/s · 300 → {e3}/s<br>남는 개체를 팔아 비용을 줄이세요.</div>',
+    'tip.pop': '<b class="g">● 식물</b>: 초식의 먹이. 컨테이너가 클수록 많이 자랍니다.<br><b class="c">▲ 초식</b>: 식물을 먹음. 판매가 {hp}.<br><b class="r">◆ 육식</b>: 초식을 사냥. 판매가 {cp}.<div class="dim">세포는 근처에 짝이 있어야 분열합니다. 현재 생물량: {B}</div>',
+    'tip.speed': '<b>게임 배속.</b> 단축키: <b>+</b> / <b>-</b>',
+    'g.title': '가이드', 'g.skip': '가이드 건너뛰기',
+    'g.carn': '초식 <b>▲</b>은 식물을 먹고 분열합니다. 초식이 <b>{h} / {n}</b>마리가 되면 <b>◆ 육식 스폰</b>({v})을 누르세요. 너무 일찍 넣으면 굶어 죽습니다.',
+    'g.box': '<b>수용량 막대</b>를 보세요. 한도를 넘으면 세포가 죽기 시작합니다. <b>⬆ 컨테이너 업그레이드</b>({v})로 한도와 식물 생산량을 늘리세요. (단축키 <b>U</b>)',
+    'g.sell': '육식: <b>{c} / {n}</b>. 약 {n}마리까지 늘린 뒤 적당한 시세에 일부를 파세요(<b>카드가 붉게 깜빡일 때</b>가 가장 좋음). 번식할 수 있게 <b>4마리 정도</b>는 남기세요. 현금이 부족하면 <b>▲ 초식</b>을 파세요.',
+    'g.end': '좋습니다! 남는 개체는 팔고, 육식은 4마리 이상 남기고, 컨테이너가 차면 업그레이드하세요.',
+    'to.start': '🧫 배양 시작: 초식 세포가 늘어나면 육식 세포를 투입하세요',
+    'to.noCells': '매도할 {name}가 없습니다', 'to.noMoney': '잔고가 부족합니다',
+    'to.bigSale': '💸 육식 {n}마리 매도: 순익 {v}',
+    'to.herbExt': '☠ 초식 세포 멸종: 먹이사슬 붕괴', 'to.carnExt': '☠ 육식 세포 멸종: 주 수입원 중단',
+    'to.carnLone': '⚠ 육식 1마리: 짝이 없어 분열 불가', 'to.herbLone': '⚠ 초식 1마리: 짝이 없어 분열 불가',
+    'to.spike': '📈 육식 시세 급등 {p}: 매도 찬스',
+    'to.crowd': '⚠ 과밀! 세포가 죽고 있습니다. 일부를 팔거나 컨테이너를 업그레이드하세요.',
+    'to.upgrade': '⬆ 컨테이너 Lv {l} 업그레이드 완료. 새 한도: {cap}',
+    'ct.title': '컨테이너', 'ct.cap': '생물량 / 한도', 'ct.upgrade': '⬆ 업그레이드 [U]',
+    'ct.next': '한도 {a} → {b} · 식물 ×{m}', 'ct.max': '최대 레벨',
+    'ct.plants': '식물 {r}개/s (×{m})', 'ct.ok': '{p}% 사용', 'ct.over': '⚠ 초과 +{p}% · 세포 사망 중',
+    'ct.note': '생물량 = 초식 + 육식 × {cb}. 한도를 넘으면 매초 무작위로 세포가 죽습니다.',
+    'end.level': '컨테이너', 'end.crowd': '과밀 사망',
+    'to.reset': '기본값으로 복원했습니다', 'to.copied': '📋 설정 코드를 클립보드에 복사했습니다',
+    'tu.close': '닫기 [`]', 'tu.copy': '📋 설정 코드 복사', 'tu.sim': '▶ 밸런스 시뮬레이션', 'tu.reset': '↺ 기본값 복원', 'tu.restart': '⟳ 현재 설정으로 재시작',
+    'tu.note': '🧪 <b>이 연구소의 규칙은 당신이 정합니다.</b> 아래 수치를 직접 바꿔 게임 전체 밸런스를 새로 짜고, 나만의 버전으로 즐겨 보세요. 대부분 바로 적용되고, 일부는 재시작 후 적용됩니다.',
+    'tu.simSec': 'BALANCE SIMULATION · 헤드리스 봇 3종',
+    'tu.simIntro': '현재 설정값으로 Greedy / Hoarder / Eco-Trader 봇을 각각 최대 20분(게임 시간) 가상 실행합니다.',
+    'tu.thBot': '전략', 'tu.thResult': '결과', 'tu.thTime': '시간', 'tu.thMoney': '최종/최고 잔고', 'tu.thSold': '육식 매도', 'tu.thGoal': '목표',
+    'tu.rowSub': 'seed {s} · 최대 ▲{h} ◆{c} · 붕괴 {k}회', 'tu.done': '완료: {p}/{n} 목표 달성', 'tu.running': '시뮬레이션 중… ({i}/{n})',
+    'tu.restartNote': '재시작 시 적용',
+    'out.CLEAR': '클리어', 'out.BANKRUPT': '파산', 'out.TIMEOUT': '시간 초과',
+    'bot.greedy': '방치/탐욕 (Greedy)', 'bot.greedy.goal': '10분 내 멸종·파산',
+    'bot.hoarder': '생태계 방임 (Hoarder)', 'bot.hoarder.goal': '수익 0 · 폭증/집단 아사 반복',
+    'bot.eco': '생태학 트레이더 (Eco-Trader)', 'bot.eco.goal': '20분 내 {v}',
+    'sec.economy': '기본 · 경제', 'sec.market': '마켓', 'sec.actions': '유료 개입', 'sec.env': '고정 환경', 'sec.container': '컨테이너',
+    'sec.plant': '식물', 'sec.herb': '초식 세포', 'sec.carn': '육식 세포', 'sec.system': '시스템',
+    'cfg.startMoney': '초기 자금', 'cfg.targetMoney': '클리어 목표 자금', 'cfg.labUpkeepBase': '유지비 기본 $/s',
+    'cfg.labUpkeepBiomassRate': '유지비 계수', 'cfg.labUpkeepBiomassExp': '유지비 지수', 'cfg.carnivoreBiomass': '육식 1마리 생물량', 'cfg.arrearsGraceSec': '체납 유예 (초)',
+    'cfg.marketCycleSec': '시세 변동 주기 (초)', 'cfg.herbivorePriceMin': '초식 단가 최소', 'cfg.herbivorePriceMax': '초식 단가 최대',
+    'cfg.carnivorePriceMin': '육식 단가 최소', 'cfg.carnivorePriceMax': '육식 단가 최대', 'cfg.hotThreshold': '고점 판정 (정규화 0~1)', 'cfg.harvestFee': '매도 수수료', 'cfg.priceMomentum': '시세 추세 지속률', 'cfg.priceResistZone': '시세 저항 구간', 'cfg.herbPriceVolatility': '초식 시세 변동폭', 'cfg.carnPriceVolatility': '육식 시세 변동폭', 'cfg.carnShockChance': '급등·폭락 확률',
+    'cfg.spawnHerbivoreCost': '초식 스폰 비용', 'cfg.spawnHerbivoreCount': '초식 스폰 수', 'cfg.spawnCarnivoreCost': '육식 스폰 비용',
+    'cfg.spawnCarnivoreCount': '육식 스폰 수', 'cfg.emergencyFeedCost': '영양 살포 비용', 'cfg.emergencyFeedCount': '영양 살포 식물 수',
+    'cfg.containerMaxLevel': '최대 레벨', 'cfg.containerBaseCap': 'Lv1 생물량 한도', 'cfg.containerCapGrowth': '레벨당 한도 배율',
+    'cfg.containerPlantBonus': '레벨당 식물 보너스', 'cfg.containerUpgradeCost': '첫 업그레이드 비용', 'cfg.containerCostGrowth': '레벨당 비용 배율',
+    'cfg.overcrowdDeathRate': '과밀 사망 계수',
+    'cfg.defaultLight': '일조량', 'cfg.defaultTemp': '수온', 'cfg.defaultNutrient': '영양 염류', 'cfg.lightHeatEffect': '일조량→수온 부작용',
+    'cfg.plantSpawnBaseRate': '초당 생성 (일조 50%)', 'cfg.plantEnergyBase': '식물 에너지 (영양 50%)', 'cfg.plantMaxCap': '식물 최대 개수',
+    'cfg.herbivoreStartEnergy': '초기 에너지', 'cfg.herbivoreReproduceThreshold': '분열 임계치', 'cfg.herbivoreBaseSpeed': '기본 속도',
+    'cfg.herbivoreBaseMetabolism': '기본 대사량 /s', 'cfg.herbivoreSightRange': '먹이 탐색 반경', 'cfg.herbivoreFleeRange': '도주 감지 반경',
+    'cfg.herbivoreMateRange': '정족수(짝) 반경', 'cfg.herbivoreReproCooldown': '분열 쿨다운',
+    'cfg.carnivoreStartEnergy': '초기 에너지', 'cfg.carnivoreReproduceThreshold': '분열 임계치', 'cfg.carnivoreBaseSpeed': '기본 속도',
+    'cfg.carnivoreBaseMetabolism': '기본 대사량 /s', 'cfg.carnivoreSightRange': '사냥 탐색 반경', 'cfg.carnivoreEnergyYield': '포식 시 에너지',
+    'cfg.carnivoreMateRange': '정족수(짝) 반경', 'cfg.carnivoreDigestTime': '소화 시간', 'cfg.carnivoreReproCooldown': '분열 쿨다운',
+    'cfg.carnivoreSpacing': '영역 간격 (분리 반경)', 'cfg.maxHerbivores': '초식 최대 개체', 'cfg.maxCarnivores': '육식 최대 개체'
+  }
+};
+let LANG = 'en';
+try { const saved = localStorage.getItem('stp.lang'); if (saved && I18N[saved]) LANG = saved; } catch (e) {}
+// 번역 조회: 현재 언어 → 영어 → 키 순으로 대체
+function t(key, p) {
+  let s = I18N[LANG][key] ?? I18N.en[key] ?? key;
+  if (p) s = s.replace(/\{(\w+)\}/g, (_, k) => p[k] ?? '');
+  return s;
+}
 
 /* =====================================================================
    [8] UI 공통 — DOM 참조, 포맷터, 토스트
@@ -905,7 +1192,7 @@ function toast(msg, kind = '') {
    [9] 게임 상태 머신 — START_MENU → PLAYING → GAME_OVER / GAME_CLEAR
    ===================================================================== */
 let world = null, demo = null, gameState = 'START_MENU', speed = 1, acc = 0, lastTs = performance.now();
-let selLever = 'light', uiTimer = 0, tradeLog = [];
+let uiTimer = 0, tradeLog = [];
 const effects = [];
 
 function enterState(s) {
@@ -913,50 +1200,74 @@ function enterState(s) {
   const ov = $('overlay');
   if (s === 'START_MENU') {
     demo = createWorld(GAME_CONFIG, { herbs: 40, carns: 4, headless: true }); demo.money = 1e12;
-    ov.className = '';
-    ov.innerHTML = `<div class="ovbox">
-      <h1>SELL THE PREDATOR</h1><h2>BREED &amp; BLEED</h2>
-      <div class="tag">BIO-SPHERE: MARKET &amp; MUTATION</div>
-      <ul>
-        <li><b class="g">● 식물</b> → <b class="c">▲ 초식 세포</b> → <b class="r">◆ 육식 세포</b> 먹이사슬을 밀폐 배양조에서 키웁니다.</li>
-        <li>환경 레버(일조량·수온·영양)는 <b class="g">무료</b>. 방치하면 생태계는 반드시 한쪽으로 쏠려 붕괴합니다.</li>
-        <li>세포는 <b>근처에 동족이 있어야만</b> 분열합니다. 다 팔아버리면 대가 끊깁니다 — 최소 번식 종자를 남기세요.</li>
-        <li>육식 세포는 비싸게 팔리지만 시세가 널뛰기합니다. 호가창이 <b class="r">붉게 점멸</b>할 때가 고점입니다.</li>
-        <li>연구소 유지비가 매초 빠져나가며, <b>배양 개체가 많을수록 비싸집니다</b>. 잔고 $0으로 ${GAME_CONFIG.arrearsGraceSec}초 체납하거나, 전멸 후 복원 자금이 없으면 <b class="r">파산</b>.</li>
-        <li>목표: 잔고 <b style="color:var(--gold)">${fmt(GAME_CONFIG.targetMoney)}</b> 달성.</li>
-      </ul>
-      <button class="bigbtn" id="ovStart">배양 시작 (START)</button>
-    </div>`;
-    $('ovStart').onclick = () => enterState('PLAYING');
+    renderMenu();
   } else if (s === 'PLAYING') {
     world = createWorld(GAME_CONFIG);
     demo = null; acc = 0; effects.length = 0; tradeLog = [];
     $('toasts').innerHTML = ''; renderTradeLog();
     ov.className = 'hidden'; ov.innerHTML = '';
-    syncLevers(); drawSparks(); selectLever('light');
-    toast('🧫 배양 시작 — 초식 세포가 늘어나면 육식 세포를 투입하세요', 'good');
+    drawSparks();
+    startGuide();
+    toast(t('to.start'), 'good');
   } else if (s === 'GAME_OVER' || s === 'GAME_CLEAR') {
+    guide = null; renderGuide();
     const w = world, st = w.stats, over = s === 'GAME_OVER';
-    const reason = !over ? `${mmss(w.endTime)} 만에 목표 잔고 ${fmt(w.cfg.targetMoney)}에 도달했습니다.`
-      : w.endReason === 'arrears' ? `잔고 $0 상태로 ${w.cfg.arrearsGraceSec}초간 유지비를 체납해 연구소가 폐쇄되었습니다.`
-      : `모든 세포가 멸종했고, 생태계를 복원할 자금(${fmt(w.cfg.spawnHerbivoreCost)})도 남지 않았습니다.`;
+    const reason = !over ? t('end.clear', { t: mmss(w.endTime), v: fmt(w.cfg.targetMoney) })
+      : w.endReason === 'arrears' ? t('end.arrears', { s: w.cfg.arrearsGraceSec })
+      : t('end.extinct', { v: fmt(w.cfg.spawnHerbivoreCost) });
     ov.className = '';
     ov.innerHTML = `<div class="ovbox ${over ? 'over' : 'clear'}">
       <div class="emblem">${over ? '☠' : '✦'}</div>
       <h1>${over ? 'Ecosystem Collapsed &amp; Bankrupted' : 'Ecosystem Stabilized. Target Reached.'}</h1>
       <p style="margin-top:10px;color:var(--dim)">${reason}</p>
       <div class="endstats">
-        <div>경과 시간 <b>${mmss(w.endTime)}</b></div><div>최종 잔고 <b>${fmt(w.money)}</b></div>
-        <div>총 매출 <b>${fmt(st.revenue)}</b></div><div>최고 잔고 <b>${fmt(st.peakMoney)}</b></div>
-        <div>매도 (초식/육식) <b>${st.soldH} / ${st.soldC}</b></div><div>수수료 · 유지비 <b>${fmt(st.fees + st.upkeep)}</b></div>
-        <div>개입 지출 <b>${fmt(st.spent)}</b></div><div>최대 개체 (초식/육식) <b>${st.maxH} / ${st.maxC}</b></div>
-        <div>분열 (초식/육식) <b>${st.bornH} / ${st.bornC}</b></div><div>아사 (초식/육식) <b>${st.starvedH} / ${st.starvedC}</b></div>
-        <div>포식된 초식 <b>${st.eaten}</b></div><div>멸종 (초식/육식) <b>${st.herbExt} / ${st.carnExt}</b></div>
+        <div>${t('end.time')} <b>${mmss(w.endTime)}</b></div><div>${t('end.money')} <b>${fmt(w.money)}</b></div>
+        <div>${t('end.revenue')} <b>${fmt(st.revenue)}</b></div><div>${t('end.peak')} <b>${fmt(st.peakMoney)}</b></div>
+        <div>${t('end.sold')} <b>${st.soldH} / ${st.soldC}</b></div><div>${t('end.costs')} <b>${fmt(st.fees + st.upkeep)}</b></div>
+        <div>${t('end.spent')} <b>${fmt(st.spent)}</b></div><div>${t('end.max')} <b>${st.maxH} / ${st.maxC}</b></div>
+        <div>${t('end.born')} <b>${st.bornH} / ${st.bornC}</b></div><div>${t('end.starved')} <b>${st.starvedH} / ${st.starvedC}</b></div>
+        <div>${t('end.eaten')} <b>${st.eaten}</b></div><div>${t('end.ext')} <b>${st.herbExt} / ${st.carnExt}</b></div>
+        <div>${t('end.level')} <b>Lv ${w.level}</b></div><div>${t('end.crowd')} <b>${st.crowded}</b></div>
       </div>
-      <button class="bigbtn" id="ovRestart">다시 배양 (RESTART)</button>
+      <button class="bigbtn" id="ovRestart">${t('end.restart')}</button>
     </div>`;
     $('ovRestart').onclick = () => enterState('PLAYING');
   }
+}
+// 시작 화면 (언어 선택 포함 — 기본 영어)
+function renderMenu() {
+  const ov = $('overlay');
+  ov.className = '';
+  ov.innerHTML = `<div class="ovbox">
+    <h1>SELL THE PREDATOR</h1><h2>BREED &amp; BLEED</h2>
+    <div class="tag">BIO-SPHERE: MARKET &amp; MUTATION</div>
+    <div class="langsel">${t('menu.lang')}
+      <button data-lang="en" class="${LANG === 'en' ? 'on' : ''}">English</button>
+      <button data-lang="ko" class="${LANG === 'ko' ? 'on' : ''}">한국어</button>
+    </div>
+    <ul>
+      <li>${t('menu.l1')}</li><li>${t('menu.l2')}</li><li>${t('menu.l3')}</li>
+      <li>${t('menu.l4', { s: GAME_CONFIG.arrearsGraceSec })}</li>
+    </ul>
+    <div class="goalline">${t('menu.goal', { v: fmt(GAME_CONFIG.targetMoney) })}</div>
+    <button class="bigbtn" id="ovStart">${t('menu.start')}</button>
+    ${guideSeen() ? `<div style="margin-top:14px"><button class="linkbtn" id="ovGuide">${t('menu.guideAgain')}</button></div>` : ''}
+  </div>`;
+  ov.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => setLang(b.dataset.lang));
+  $('ovStart').onclick = () => enterState('PLAYING');
+  if ($('ovGuide')) $('ovGuide').onclick = () => { try { localStorage.removeItem('stp.guide'); } catch (e) {} renderMenu(); };
+}
+// 정적 DOM 문구 일괄 적용
+function applyI18n() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+  buildTuner(); renderTradeLog();
+}
+function setLang(l) {
+  LANG = l;
+  try { localStorage.setItem('stp.lang', l); } catch (e) {}
+  applyI18n();
+  if (gameState === 'START_MENU') renderMenu();
 }
 
 /* =====================================================================
@@ -965,40 +1276,29 @@ function enterState(s) {
 function doSell(kind, pct) {
   if (gameState !== 'PLAYING') return;
   const r = sellSpecies(world, kind, pct);
-  if (!r) toast(`매도할 ${kind === 'herb' ? '초식' : '육식'} 세포가 없습니다`, 'warn');
+  if (!r) toast(t('to.noCells', { name: t(kind === 'herb' ? 'sp.herbs' : 'sp.carns') }), 'warn');
 }
 function doSpawn(kind) {
   if (gameState !== 'PLAYING') return;
   const ok = kind === 'herb' ? spawnHerbivores(world) : kind === 'carn' ? spawnCarnivores(world) : emergencyFeed(world);
-  if (!ok) toast('잔고가 부족합니다', 'warn');
+  if (!ok) toast(t('to.noMoney'), 'warn');
 }
 function setSpeed(v) {
   speed = v;
   document.querySelectorAll('#speedBtns button').forEach(b => b.classList.toggle('on', +b.dataset.speed === v));
 }
-const LEVERS = { light: 'lvLight', temp: 'lvTemp', nutrient: 'lvNut' };
-function selectLever(k) {
-  selLever = k;
-  document.querySelectorAll('.lever').forEach(el => el.classList.toggle('sel', el.dataset.lever === k));
+function doUpgrade() {
+  if (gameState !== 'PLAYING') return;
+  if (upgradeCost(world) == null) return;
+  if (!upgradeContainer(world)) toast(t('to.noMoney'), 'warn');
 }
-function setLever(k, v) {
-  if (!world) return;
-  world.env[k] = clamp(Math.round(v * 100) / 100, 0, 1);
-  $(LEVERS[k]).value = Math.round(world.env[k] * 100);
-}
-function syncLevers() { for (const k in LEVERS) $(LEVERS[k]).value = Math.round(world.env[k] * 100); }
 
 document.querySelectorAll('.sell').forEach(b => b.addEventListener('click', e => { doSell(b.dataset.kind, +b.dataset.pct); b.blur(); }));
 $('bSpawnH').onclick = e => { doSpawn('herb'); e.currentTarget.blur(); };
 $('bSpawnC').onclick = e => { doSpawn('carn'); e.currentTarget.blur(); };
 $('bFeed').onclick = e => { doSpawn('plant'); e.currentTarget.blur(); };
+$('bUpgrade').onclick = e => { doUpgrade(); e.currentTarget.blur(); };
 document.querySelectorAll('#speedBtns button').forEach(b => b.addEventListener('click', () => { setSpeed(+b.dataset.speed); b.blur(); }));
-for (const k in LEVERS) {
-  const el = $(LEVERS[k]);
-  el.addEventListener('input', () => { selectLever(k); setLever(k, el.value / 100); });
-  el.addEventListener('focus', () => selectLever(k));
-}
-document.querySelectorAll('.lever').forEach(el => el.addEventListener('mousedown', () => selectLever(el.dataset.lever)));
 
 // 키보드 단축키 (한글 IME 상태에서도 동작하도록 e.code 사용)
 document.addEventListener('keydown', e => {
@@ -1013,11 +1313,7 @@ document.addEventListener('keydown', e => {
   switch (e.code) {
     case 'Digit1': case 'Numpad1': if (!e.repeat) doSell('herb', 0.3); break;
     case 'Digit2': case 'Numpad2': if (!e.repeat) doSell('carn', 0.3); break;
-    case 'KeyQ': selectLever('light'); break;
-    case 'KeyW': selectLever('temp'); break;
-    case 'KeyE': selectLever('nutrient'); break;
-    case 'ArrowLeft': case 'ArrowDown': e.preventDefault(); setLever(selLever, world.env[selLever] - 0.05); break;
-    case 'ArrowRight': case 'ArrowUp': e.preventDefault(); setLever(selLever, world.env[selLever] + 0.05); break;
+    case 'KeyU': if (!e.repeat) doUpgrade(); break;
     case 'KeyS': if (!e.repeat) doSpawn('plant'); break;
     case 'Equal': case 'NumpadAdd': setSpeed(order[Math.min(2, order.indexOf(speed) + 1)]); break;
     case 'Minus': case 'NumpadSubtract': setSpeed(order[Math.max(0, order.indexOf(speed) - 1)]); break;
@@ -1064,9 +1360,12 @@ function renderWorld(w, now) {
   for (let x = 60; x < WORLD_W; x += 60) { ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); }
   for (let y = 60; y < WORLD_H; y += 60) { ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); }
   ctx.stroke();
-  ctx.strokeStyle = 'rgba(34,228,255,0.25)'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, WORLD_W - 2, WORLD_H - 2);
-  ctx.fillStyle = 'rgba(93,125,148,0.6)'; ctx.font = '12px Consolas, monospace';
-  ctx.fillText('CULTURE TANK 01 // ' + WORLD_W + '×' + WORLD_H + 'µm', 12, WORLD_H - 12);
+  // 컨테이너 외곽: 레벨이 오를수록 두껍게, 과밀이면 붉게 맥동
+  const crowded = biomass(w) > containerCap(w);
+  ctx.strokeStyle = crowded ? `rgba(255,45,85,${0.45 + 0.35 * Math.sin(now * 8)})` : 'rgba(34,228,255,0.25)';
+  ctx.lineWidth = 1 + w.level; ctx.strokeRect(w.level / 2, w.level / 2, WORLD_W - w.level, WORLD_H - w.level);
+  ctx.fillStyle = crowded ? 'rgba(255,90,110,0.85)' : 'rgba(93,125,148,0.6)'; ctx.font = '12px Consolas, monospace';
+  ctx.fillText(`CONTAINER Lv${w.level} // CAP ${containerCap(w)}`, 14, WORLD_H - 14);
 
   // 1) 발광 레이어 (가산 합성)
   ctx.globalCompositeOperation = 'lighter';
@@ -1129,11 +1428,14 @@ function processEvents(w) {
   for (const e of w.events) {
     switch (e.type) {
       case 'birth': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 2, r1: e.kind === 'carn' ? 22 : 12, life: 0.5, t: 0, col: e.kind === 'carn' ? '255,45,85' : '34,228,255' }); break;
-      case 'death': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 8, r1: 1, life: 0.8, t: 0, col: '120,140,155' }); break;
+      case 'death': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 8, r1: 1, life: 0.8, t: 0, col: e.kind === 'crowd' ? '255,140,60' : '120,140,155' }); break;
+      case 'upgrade':
+        pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 20, r1: 600, life: 1.2, t: 0, col: '255,209,102' });
+        toast(t('to.upgrade', { l: e.level, cap: e.cap }), 'good'); break;
       case 'kill': pushFx({ k: 'ring', x: e.x, y: e.y, r0: 3, r1: 16, life: 0.35, t: 0, col: '255,120,140' }); break;
       case 'spawn': pushFx({ k: 'ring', x: WORLD_W / 2, y: WORLD_H / 2, r0: 10, r1: e.kind === 'plant' ? 400 : 90, life: 0.8, t: 0, col: e.kind === 'carn' ? '255,45,85' : e.kind === 'herb' ? '34,228,255' : '57,255,138' }); break;
       case 'market': drawSparks(); break;
-      case 'toast': toast(e.msg, e.kind); break;
+      case 'toast': toast(t(e.key, e.p), e.kind); break;
       case 'sell': onSellFx(e); break;
     }
   }
@@ -1146,13 +1448,13 @@ function onSellFx(e) {
     pushFx({ k: 'ring', x: p.x, y: p.y, r0: 2, r1: 18, life: 0.5, t: 0, col: '255,209,102' });
   });
   const net = e.gross - e.fee;
-  tradeLog.unshift(`${mmss(world.t)} ${e.kind === 'herb' ? '▲초식' : '◆육식'} ${e.count}마리 × ${fmtP(e.kind, e.price)} = <b>+${fmt(e.gross)}</b> (수수료 -${fmt(e.fee)})`);
+  tradeLog.unshift(t('mk.log', { time: mmss(world.t), sym: t(e.kind === 'herb' ? 'log.herb' : 'log.carn'), n: e.count, p: fmtP(e.kind, e.price), g: fmt(e.gross), f: fmt(e.fee) }));
   tradeLog.length = Math.min(tradeLog.length, 5); renderTradeLog();
   const m = $('hMoney'); m.classList.remove('flash-up'); void m.offsetWidth; m.classList.add('flash-up');
-  if (e.kind === 'carn' && net >= 1000) toast(`💸 육식 ${e.count}마리 매도 — 순익 ${fmt(net)}`, 'good');
+  if (e.kind === 'carn' && net >= 1000) toast(t('to.bigSale', { n: e.count, v: fmt(net) }), 'good');
 }
 function renderTradeLog() {
-  $('tradeLog').innerHTML = tradeLog.length ? tradeLog.map(t => `<div>${t}</div>`).join('') : '<div>체결 내역 없음</div>';
+  $('tradeLog').innerHTML = tradeLog.length ? tradeLog.map(x => `<div>${x}</div>`).join('') : `<div>${t('mk.noTrades')}</div>`;
 }
 function renderEffects(rdt) {
   const s = view.s;
@@ -1185,7 +1487,7 @@ function renderGraph(w) {
   ctx.fillStyle = 'rgba(4,10,16,0.78)'; ctx.strokeStyle = 'rgba(34,228,255,0.28)'; ctx.lineWidth = 1;
   ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(gx, gy, gw, gh, 6); else ctx.rect(gx, gy, gw, gh); ctx.fill(); ctx.stroke();
   ctx.font = '10px Consolas, monospace'; ctx.fillStyle = 'rgba(160,190,210,0.75)';
-  ctx.fillText('LOTKA–VOLTERRA MONITOR · 최근 2분', gx + 10, gy + 15);
+  ctx.fillText(t('gr.title'), gx + 10, gy + 15);
   const H = w.herbs.length, C = w.carns.length;
   ctx.textAlign = 'right';
   ctx.fillStyle = '#ff2d55'; ctx.fillText('◆ ' + C, gx + gw - 10, gy + 15);
@@ -1244,18 +1546,18 @@ function updateUI() {
   const H = w.herbs.length, C = w.carns.length, playing = gameState === 'PLAYING';
   // 헤더
   $('hMoney').textContent = '💰 ' + fmt(w.money);
-  $('hGoalLbl').textContent = '목표 잔고 ' + fmt(c.targetMoney);
+  $('hGoalLbl').textContent = t('hdr.goal', { v: fmt(c.targetMoney) });
   const gp = clamp(w.money / c.targetMoney, 0, 1);
   $('hGoalBar').style.width = (gp * 100).toFixed(1) + '%'; $('hGoalPct').textContent = (gp * 100).toFixed(1) + '%';
   $('hTime').textContent = mmss(w.t);
   const up = $('hUpkeep');
-  if (w.arrears > 0) { up.textContent = `⚠ 체납! ${Math.ceil(c.arrearsGraceSec - w.arrears)}초 후 파산`; up.style.opacity = (Math.floor(performance.now() / 300) % 2) ? 1 : 0.4; }
+  if (w.arrears > 0) { up.textContent = t('hdr.arrears', { s: Math.ceil(c.arrearsGraceSec - w.arrears) }); up.style.opacity = (Math.floor(performance.now() / 300) % 2) ? 1 : 0.4; }
   else { up.textContent = `-$${upkeepRate(w).toFixed(1)}/s`; up.style.opacity = 1; }
   $('hP').textContent = w.plants.length; $('hH').textContent = H; $('hC').textContent = C;
   // 마켓
   $('mTimer').textContent = m.timer.toFixed(1) + 's';
   $('mBar').style.width = (clamp(m.timer / c.marketCycleSec, 0, 1) * 100) + '%';
-  const ev = $('mEvent'); ev.textContent = m.event; ev.className = 'event ' + m.eventKind;
+  const ev = $('mEvent'); ev.textContent = t('ev.' + m.event); ev.className = 'event ' + m.eventKind;
   for (const [kind, sfx, n] of [['herb', 'H', H], ['carn', 'C', C]]) {
     const s = m[kind];
     $('mPrice' + sfx).textContent = fmtP(kind, s.price);
@@ -1265,25 +1567,132 @@ function updateUI() {
     else if (chg > 0) { el.textContent = `▲ +${chg.toFixed(0)}%`; el.style.color = '#ff5c7a'; }
     else { el.textContent = `▼ ${chg.toFixed(0)}%`; el.style.color = '#6fa8ff'; }
     $('card' + sfx).classList.toggle('hot', isHot(w, kind));
-    $('mHold' + sfx).textContent = n;
-    const est = p => n ? fmt(Math.min(n, Math.ceil(n * p)) * s.price - c.harvestFee) : '—';
-    $('mEst' + sfx + '30').textContent = est(0.3); $('mEst' + sfx + '50').textContent = est(0.5);
+    $('mHold' + sfx).innerHTML = t('mk.hold', { n: `<b>${n}</b>` });
   }
-  $('mRangeH').textContent = `범위 $${c.herbivorePriceMin}~$${c.herbivorePriceMax}`;
-  $('mRangeC').textContent = `범위 $${c.carnivorePriceMin}~$${c.carnivorePriceMax}`;
-  $('feeNote').textContent = `매도 1회당 고정 수수료 ${fmt(c.harvestFee)} · 최소 1마리 체결`;
-  document.querySelectorAll('.sell').forEach(b => { b.disabled = !playing || (b.dataset.kind === 'herb' ? H : C) === 0; });
+  $('mRangeH').textContent = t('mk.range', { a: '$' + c.herbivorePriceMin, b: '$' + c.herbivorePriceMax });
+  $('mRangeC').textContent = t('mk.range', { a: '$' + c.carnivorePriceMin, b: '$' + c.carnivorePriceMax });
+  $('feeNote').textContent = t('mk.fee', { f: fmt(c.harvestFee) });
+  // 매도 버튼: 실제 판매될 마리 수(N% 올림) · 예상 순익(수수료 차감)을 표시
+  document.querySelectorAll('.sell').forEach(b => {
+    const kind = b.dataset.kind, pct = +b.dataset.pct, n = kind === 'herb' ? H : C;
+    const k = n ? Math.min(n, Math.ceil(n * pct)) : 0, net = k * m[kind].price - c.harvestFee;
+    const html = t('sell.btn', {
+      sym: kind === 'herb' ? '▲' : '◆', k, pct: Math.round(pct * 100),
+      v: k ? (net >= 0 ? '+' + fmt(net) : `<span class="neg">−${fmt(-net)}</span>`) : '—',
+      key: pct === 0.3 ? (kind === 'herb' ? ' · [1]' : ' · [2]') : ''
+    });
+    if (b._html !== html) { b.innerHTML = html; b._html = html; }
+    b.disabled = !playing || n === 0;
+  });
   // 유료 개입 버튼
-  $('bSpawnH').disabled = !playing || w.money < c.spawnHerbivoreCost; $('bSpawnHc').textContent = fmt(c.spawnHerbivoreCost); $('bSpawnHd').textContent = `${c.spawnHerbivoreCount}마리 · 중앙 투입`;
-  $('bSpawnC').disabled = !playing || w.money < c.spawnCarnivoreCost; $('bSpawnCc').textContent = fmt(c.spawnCarnivoreCost); $('bSpawnCd').textContent = `${c.spawnCarnivoreCount}마리 · 중앙 투입`;
-  $('bFeed').disabled = !playing || w.money < c.emergencyFeedCost; $('bFeedc').textContent = fmt(c.emergencyFeedCost); $('bFeedd').textContent = `식물 ${c.emergencyFeedCount}개 · [S]`;
-  // 환경 레버 수치
-  $('lvLightV').textContent = Math.round(w.env.light * 100) + '%';
-  $('lvTempV').textContent = Math.round(w.env.temp * 100) + '%';
-  $('lvNutV').textContent = Math.round(w.env.nutrient * 100) + '%';
-  $('lvLightD').textContent = `식물 ${F.plantRate.toFixed(1)}개/s`;
-  $('lvTempD').textContent = `실효 ${Math.round(F.effTemp * 100)}% · 대사×${F.metabMul.toFixed(2)}`;
-  $('lvNutD').textContent = `식물 ${F.plantEnergy.toFixed(0)} kcal/개`;
+  $('bSpawnH').disabled = !playing || w.money < c.spawnHerbivoreCost; $('bSpawnHc').textContent = fmt(c.spawnHerbivoreCost); $('bSpawnHd').textContent = t('iv.cells', { n: c.spawnHerbivoreCount });
+  $('bSpawnC').disabled = !playing || w.money < c.spawnCarnivoreCost; $('bSpawnCc').textContent = fmt(c.spawnCarnivoreCost); $('bSpawnCd').textContent = t('iv.cells', { n: c.spawnCarnivoreCount });
+  $('bFeed').disabled = !playing || w.money < c.emergencyFeedCost; $('bFeedc').textContent = fmt(c.emergencyFeedCost); $('bFeedd').textContent = t('iv.plants', { n: c.emergencyFeedCount });
+  // 컨테이너 패널: 생물량/한도 막대, 레벨, 다음 업그레이드
+  const B = biomass(w), cap = containerCap(w), ratio = B / cap, cost = upgradeCost(w), maxLv = c.containerMaxLevel;
+  $('ctLv').textContent = `Lv ${w.level}`;
+  const pips = Array.from({ length: maxLv - 1 }, (_, i) => `<i class="${i < w.level - 1 ? 'on' : ''}"></i>`).join('');
+  if ($('ctPips')._h !== pips) { $('ctPips').innerHTML = pips; $('ctPips')._h = pips; }
+  $('ctCapTxt').textContent = `${B} / ${cap}`;
+  $('ctCapBar').style.width = (Math.min(1, ratio) * 100).toFixed(1) + '%';
+  $('ctBar').className = 'capbar' + (ratio > 1 ? ' over' : ratio > 0.8 ? ' warn' : '');
+  $('ctPlants').textContent = t('ct.plants', { r: F.plantRate.toFixed(1), m: plantMul(w).toFixed(2) });
+  const st = $('ctState');
+  st.textContent = ratio > 1 ? t('ct.over', { p: Math.round((ratio - 1) * 100) }) : t('ct.ok', { p: Math.round(ratio * 100) });
+  st.className = ratio > 1 ? 'over' : '';
+  $('ctNote').textContent = t('ct.note', { cb: c.carnivoreBiomass });
+  $('bUpgrade').disabled = !playing || cost == null || w.money < cost;
+  $('bUpgradeD').textContent = cost == null ? t('ct.max') : t('ct.next', { a: cap, b: containerCap(w, w.level + 1), m: plantMul(w, w.level + 1).toFixed(2) });
+  $('bUpgradeC').textContent = cost == null ? 'MAX' : fmt(cost);
+}
+
+/* =====================================================================
+   [12-0] 헤더 툴팁 — 마우스를 올린 동안 10Hz로 실시간 수치 갱신
+   ===================================================================== */
+const fmt2 = v => '$' + (Math.round(v * 10) / 10).toLocaleString('en-US');
+const TIPS = {
+  money: (w, c) => t('tip.money', { s: c.arrearsGraceSec, peak: fmt(w.stats.peakMoney), rev: fmt(w.stats.revenue) }),
+  goal: (w, c) => t('tip.goal', { v: fmt(c.targetMoney), p: (clamp(w.money / c.targetMoney, 0, 1) * 100).toFixed(1), left: fmt(Math.max(0, c.targetMoney - w.money)) }),
+  time: (w, c) => t('tip.time', { s: c.marketCycleSec }),
+  upkeep: (w, c) => {
+    const at = B => fmt2(c.labUpkeepBase + c.labUpkeepBiomassRate * Math.pow(B, c.labUpkeepBiomassExp));
+    return t('tip.upkeep', { cb: c.carnivoreBiomass, base: fmt2(c.labUpkeepBase), rate: c.labUpkeepBiomassRate, B: biomass(w), exp: c.labUpkeepBiomassExp,
+      u: fmt2(upkeepRate(w)), e1: at(100), e2: at(200), e3: at(300) });
+  },
+  pop: (w, c) => t('tip.pop', { hp: `$${c.herbivorePriceMin}–${c.herbivorePriceMax}`, cp: `$${c.carnivorePriceMin}–${c.carnivorePriceMax}`, B: biomass(w) }),
+  speed: () => t('tip.speed')
+};
+let tipTarget = null;
+function renderTip() {
+  const tip = $('tip'), w = world || demo;
+  if (!tipTarget || !w) { tip.className = 'hidden'; return; }
+  tip.innerHTML = TIPS[tipTarget.dataset.tip](w, w.cfg);
+  tip.className = '';
+  // 대상 아래쪽에 배치하되 화면 밖으로 나가지 않게
+  const r = tipTarget.getBoundingClientRect();
+  tip.style.left = clamp(r.left, 8, window.innerWidth - tip.offsetWidth - 8) + 'px';
+  tip.style.top = (r.bottom + 8) + 'px';
+}
+document.querySelectorAll('[data-tip]').forEach(el => {
+  el.addEventListener('mouseenter', () => { tipTarget = el; renderTip(); });
+  el.addEventListener('mouseleave', () => { tipTarget = null; renderTip(); });
+});
+
+/* =====================================================================
+   [12-1] 초반 플레이 가이드 — 게임 상태를 보고 단계가 자동으로 넘어감 (완료/건너뛰기 후 다시 표시 안 함)
+   ===================================================================== */
+const GUIDE_HERBS = 30;   // 육식 투입을 권하는 초식 수 (Eco-Trader 봇 기준)
+const GUIDE_CARNS = 7;    // 첫 매도를 권하는 육식 수 (30% 매도 시 3마리 팔고 4마리 남음)
+const GUIDE_STEPS = [
+  { key: 'g.carn', target: () => $('bSpawnC'), done: w => w.carns.length > 0,
+    params: w => ({ h: Math.min(w.herbs.length, GUIDE_HERBS), n: GUIDE_HERBS, v: fmt(w.cfg.spawnCarnivoreCost) }) },
+  { key: 'g.sell', done: w => w.stats.soldC > 0,
+    target: w => w.carns.length >= GUIDE_CARNS ? document.querySelector('.sell.carn[data-pct="0.3"]') : $('cardC'),
+    params: w => ({ c: w.carns.length, n: GUIDE_CARNS }) },
+  { key: 'g.box', target: () => $('bUpgrade'), done: (w, g) => w.level >= 2 || g.age > 45,
+    params: w => ({ v: fmt(upgradeCost(w) || 0) }) },
+  { key: 'g.end', target: null, done: (w, g) => g.age > 10 }
+];
+let guide = null, guideTick = 0;   // { i: 현재 단계, age: 단계 경과(실시간 초) }
+function guideSeen() {
+  try { return localStorage.getItem('stp.guide') === '1'; } catch (e) { return false; }
+}
+function startGuide() {
+  guide = guideSeen() ? null : { i: 0, age: 0 };
+  renderGuide();
+}
+function endGuide() {
+  guide = null;
+  try { localStorage.setItem('stp.guide', '1'); } catch (e) {}
+  renderGuide();
+}
+function updateGuide(rdt) {
+  if (!guide || gameState !== 'PLAYING') return;
+  guide.age += rdt;
+  if (GUIDE_STEPS[guide.i].done(world, guide)) {
+    guide.i++; guide.age = 0;
+    if (guide.i >= GUIDE_STEPS.length) { endGuide(); return; }
+    renderGuide();
+  } else if ((guideTick += rdt) > 0.5) { guideTick = 0; renderGuideText(); }   // 진행 수치만 갱신
+}
+function renderGuideText() {
+  const st = GUIDE_STEPS[guide.i], el = $('gText');
+  if (el) el.innerHTML = t(st.key, st.params ? st.params(world) : null);
+  // 강조 대상은 상황에 따라 바뀔 수 있으므로 매번 다시 지정
+  const tg = st.target ? st.target(world) : null;
+  document.querySelectorAll('.guide-hi').forEach(e => { if (e !== tg) e.classList.remove('guide-hi'); });
+  if (tg) tg.classList.add('guide-hi');
+}
+function renderGuide() {
+  const el = $('guide');
+  document.querySelectorAll('.guide-hi').forEach(e => e.classList.remove('guide-hi'));
+  if (!guide) { el.className = 'hidden'; el.innerHTML = ''; return; }
+  const st = GUIDE_STEPS[guide.i];
+  el.className = '';
+  el.innerHTML = `<div class="gstep"><span>${t('g.title')} ${guide.i + 1}/${GUIDE_STEPS.length}</span><button id="gSkip">${t('g.skip')}</button></div>
+    <div id="gText"></div>`;
+  renderGuideText();
+  $('gSkip').onclick = e => { endGuide(); e.currentTarget.blur(); };
 }
 
 /* =====================================================================
@@ -1313,32 +1722,35 @@ function frame(ts) {
     renderEffects(rdt);
     if (gameState !== 'START_MENU') renderGraph(w);
   }
+  updateGuide(rdt);
   uiTimer += rdt;
-  if (world && uiTimer > 0.1) { uiTimer = 0; updateUI(); }
+  if (world && uiTimer > 0.1) { uiTimer = 0; updateUI(); if (tipTarget) renderTip(); }
   requestAnimationFrame(frame);
 }
 
 /* =====================================================================
    [14] 밸런스 튜너 (인스펙터) — 실시간 수정 / 코드 복사 / 봇 시뮬레이션
    ===================================================================== */
+// [섹션 키, [[설정 키, 재시작 시 적용 여부]...]] — 표시 문구는 I18N의 'sec.*' / 'cfg.*'
 const CFG_META = [
-  ['기본 · 경제', [['startMoney', '초기 자금', '재시작 시 적용'], ['targetMoney', '클리어 목표 자금'], ['labUpkeepBase', '유지비 기본 $/s'], ['labUpkeepPerHerb', '유지비 초식 1마리당 $/s'], ['labUpkeepPerCarn', '유지비 육식 1마리당 $/s'], ['arrearsGraceSec', '체납 유예 (초)']]],
-  ['마켓', [['marketCycleSec', '시세 변동 주기 (초)'], ['herbivorePriceMin', '초식 단가 최소'], ['herbivorePriceMax', '초식 단가 최대'], ['carnivorePriceMin', '육식 단가 최소'], ['carnivorePriceMax', '육식 단가 최대'], ['hotThreshold', '고점 판정 (정규화 0~1)'], ['harvestFee', '매도 수수료']]],
-  ['유료 개입', [['spawnHerbivoreCost', '초식 스폰 비용'], ['spawnHerbivoreCount', '초식 스폰 수'], ['spawnCarnivoreCost', '육식 스폰 비용'], ['spawnCarnivoreCount', '육식 스폰 수'], ['emergencyFeedCost', '영양 살포 비용'], ['emergencyFeedCount', '영양 살포 식물 수']]],
-  ['환경', [['defaultLight', '일조량 기본값', '재시작 시 적용'], ['defaultTemp', '수온 기본값', '재시작 시 적용'], ['defaultNutrient', '영양 기본값', '재시작 시 적용'], ['lightHeatEffect', '일조량→수온 부작용']]],
-  ['식물', [['plantSpawnBaseRate', '초당 생성 (일조 50%)'], ['plantEnergyBase', '식물 에너지 (영양 50%)'], ['plantMaxCap', '식물 최대 개수']]],
-  ['초식 세포', [['herbivoreStartEnergy', '초기 에너지'], ['herbivoreReproduceThreshold', '분열 임계치'], ['herbivoreBaseSpeed', '기본 속도'], ['herbivoreBaseMetabolism', '기본 대사량 /s'], ['herbivoreSightRange', '먹이 탐색 반경'], ['herbivoreFleeRange', '도주 감지 반경'], ['herbivoreMateRange', '정족수(짝) 반경'], ['herbivoreReproCooldown', '분열 쿨다운']]],
-  ['육식 세포', [['carnivoreStartEnergy', '초기 에너지'], ['carnivoreReproduceThreshold', '분열 임계치'], ['carnivoreBaseSpeed', '기본 속도'], ['carnivoreBaseMetabolism', '기본 대사량 /s'], ['carnivoreSightRange', '사냥 탐색 반경'], ['carnivoreEnergyYield', '포식 시 에너지'], ['carnivoreMateRange', '정족수(짝) 반경'], ['carnivoreDigestTime', '소화 시간'], ['carnivoreReproCooldown', '분열 쿨다운'], ['carnivoreSpacing', '영역 간격 (분리 반경)']]],
-  ['시스템', [['maxHerbivores', '초식 최대 개체'], ['maxCarnivores', '육식 최대 개체']]]
+  ['economy', [['startMoney', 1], ['targetMoney'], ['labUpkeepBase'], ['labUpkeepBiomassRate'], ['labUpkeepBiomassExp'], ['carnivoreBiomass'], ['arrearsGraceSec']]],
+  ['market', [['marketCycleSec'], ['herbivorePriceMin'], ['herbivorePriceMax'], ['carnivorePriceMin'], ['carnivorePriceMax'], ['hotThreshold'], ['priceMomentum'], ['priceResistZone'], ['herbPriceVolatility'], ['carnPriceVolatility'], ['carnShockChance'], ['harvestFee']]],
+  ['actions', [['spawnHerbivoreCost'], ['spawnHerbivoreCount'], ['spawnCarnivoreCost'], ['spawnCarnivoreCount'], ['emergencyFeedCost'], ['emergencyFeedCount']]],
+  ['container', [['containerMaxLevel'], ['containerBaseCap'], ['containerCapGrowth'], ['containerPlantBonus'], ['containerUpgradeCost'], ['containerCostGrowth'], ['overcrowdDeathRate']]],
+  ['env', [['defaultLight', 1], ['defaultTemp', 1], ['defaultNutrient', 1], ['lightHeatEffect']]],
+  ['plant', [['plantSpawnBaseRate'], ['plantEnergyBase'], ['plantMaxCap']]],
+  ['herb', [['herbivoreStartEnergy'], ['herbivoreReproduceThreshold'], ['herbivoreBaseSpeed'], ['herbivoreBaseMetabolism'], ['herbivoreSightRange'], ['herbivoreFleeRange'], ['herbivoreMateRange'], ['herbivoreReproCooldown']]],
+  ['carn', [['carnivoreStartEnergy'], ['carnivoreReproduceThreshold'], ['carnivoreBaseSpeed'], ['carnivoreBaseMetabolism'], ['carnivoreSightRange'], ['carnivoreEnergyYield'], ['carnivoreMateRange'], ['carnivoreDigestTime'], ['carnivoreReproCooldown'], ['carnivoreSpacing']]],
+  ['system', [['maxHerbivores'], ['maxCarnivores']]]
 ];
 function buildTuner() {
   let html = '';
   for (const [sec, rows] of CFG_META) {
-    html += `<div class="tsec">${sec}</div>`;
-    for (const [k, label, note] of rows) {
+    html += `<div class="tsec">${t('sec.' + sec)}</div>`;
+    for (const [k, restart] of rows) {
       const d = DEFAULT_CONFIG[k], unit = d <= 1 && !Number.isInteger(d) ? 1 : 0;
       const max = unit ? 1 : Math.max(1, d * 3), step = unit || d < 10 ? 0.05 : 1;
-      html += `<div class="trow"><label>${label}<small>${k}${note ? ' · ' + note : ''}</small></label>
+      html += `<div class="trow"><label>${t('cfg.' + k)}<small>${k}${restart ? ' · ' + t('tu.restartNote') : ''}</small></label>
         <input type="range" data-k="${k}" min="0" max="${max}" step="${step}" value="${GAME_CONFIG[k]}">
         <input type="number" data-k="${k}" step="${step}" value="${GAME_CONFIG[k]}"></div>`;
     }
@@ -1353,15 +1765,14 @@ function buildTuner() {
   }));
 }
 function toggleTuner() { $('tuner').classList.toggle('open'); }
-$('btnTuner').onclick = e => { toggleTuner(); e.currentTarget.blur(); };
 $('tClose').onclick = toggleTuner;
-$('tReset').onclick = () => { Object.assign(GAME_CONFIG, DEFAULT_CONFIG); buildTuner(); toast('기본값으로 복원했습니다', 'good'); };
+$('tReset').onclick = () => { Object.assign(GAME_CONFIG, DEFAULT_CONFIG); buildTuner(); toast(t('to.reset'), 'good'); };
 $('tRestart').onclick = () => { toggleTuner(); enterState('PLAYING'); };
 $('tCopy').onclick = () => {
   const text = 'const GAME_CONFIG = ' + JSON.stringify(GAME_CONFIG, null, 2) + ';';
   const fallback = () => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); };
   (navigator.clipboard ? navigator.clipboard.writeText(text).catch(fallback) : Promise.resolve(fallback()))
-    .then(() => toast('📋 설정 코드를 클립보드에 복사했습니다', 'good'));
+    .then(() => toast(t('to.copied'), 'good'));
 };
 
 // 헤드리스 봇 시뮬레이션: 제너레이터를 25ms 단위로 쪼개 실행해 UI 프리징 방지
@@ -1376,14 +1787,13 @@ $('tSim').onclick = () => {
   const out = $('simOut');
   const render = (prog) => {
     let h = `<div class="simbar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
-      <table><tr><th>전략</th><th>결과</th><th>시간</th><th>최종/최고 잔고</th><th>육식 매도</th><th>목표</th></tr>`;
+      <table><tr><th>${t('tu.thBot')}</th><th>${t('tu.thResult')}</th><th>${t('tu.thTime')}</th><th>${t('tu.thMoney')}</th><th>${t('tu.thSold')}</th><th>${t('tu.thGoal')}</th></tr>`;
     for (const r of results) {
-      const b = BOTS[r.bot];
-      h += `<tr><td>${b.label}<br><small style="color:var(--dim)">seed ${r.seed} · 최대 ▲${r.maxH} ◆${r.maxC} · 붕괴 ${r.crashes}회</small></td>
-        <td>${r.outcome}</td><td>${mmss(r.time)}</td><td>${fmt(r.money)}<br><small style="color:var(--dim)">${fmt(r.peakMoney)}</small></td>
-        <td>${r.soldC}</td><td class="${r.pass ? 'ok' : 'ng'}">${r.pass ? '✓' : '✗'} <small>${b.goal}</small></td></tr>`;
+      h += `<tr><td>${t('bot.' + r.bot)}<br><small style="color:var(--dim)">${t('tu.rowSub', { s: r.seed, h: r.maxH, c: r.maxC, k: r.crashes })}</small></td>
+        <td>${t('out.' + r.outcome)}</td><td>${mmss(r.time)}</td><td>${fmt(r.money)}<br><small style="color:var(--dim)">${fmt(r.peakMoney)}</small></td>
+        <td>${r.soldC}</td><td class="${r.pass ? 'ok' : 'ng'}">${r.pass ? '✓' : '✗'} <small>${t('bot.' + r.bot + '.goal', { v: fmt(cfg.targetMoney) })}</small></td></tr>`;
     }
-    out.innerHTML = h + '</table>' + (prog >= 1 ? `<div style="margin-top:8px">완료: ${results.filter(r => r.pass).length}/${results.length} 목표 달성</div>` : `<div style="margin-top:8px;color:var(--dim)">시뮬레이션 중… (${ji + 1}/${jobs.length})</div>`);
+    out.innerHTML = h + '</table>' + (prog >= 1 ? `<div style="margin-top:8px">${t('tu.done', { p: results.filter(r => r.pass).length, n: results.length })}</div>` : `<div style="margin-top:8px;color:var(--dim)">${t('tu.running', { i: ji + 1, n: jobs.length })}</div>`);
   };
   const pump = () => {
     const t0 = performance.now();
@@ -1404,7 +1814,7 @@ $('tSim').onclick = () => {
 /* =====================================================================
    [15] 부팅
    ===================================================================== */
-buildTuner();
+applyI18n();
 enterState('START_MENU');
 world = null;
 resize();
